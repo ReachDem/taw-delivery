@@ -29,6 +29,7 @@ export default function ParcelDetailsPage() {
 
   useEffect(() => {
     fetchParcel();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [code]);
 
   const fetchParcel = async () => {

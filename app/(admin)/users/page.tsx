@@ -46,6 +46,7 @@ export default function UsersPage() {
 
   useEffect(() => {
     loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search, agencyFilter, roleFilter]);
 
   async function loadData() {

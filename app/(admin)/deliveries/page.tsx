@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Select } from '@/components/ui/select';
 import { StatusBadge } from '@/components/ui/badge';
 import type { ParcelStatus } from '@/lib/types';
-import { formatDate, formatTimeSlot } from '@/lib/utils';
+import { formatTimeSlot } from '@/lib/utils';
 
 interface Delivery {
   id: string;
