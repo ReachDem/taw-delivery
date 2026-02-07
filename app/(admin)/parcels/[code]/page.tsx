@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
@@ -27,11 +27,7 @@ export default function ParcelDetailsPage() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  useEffect(() => {
-    fetchParcel();
-  }, [code]);
-
-  const fetchParcel = async () => {
+  const fetchParcel = useCallback(async () => {
     try {
       const response = await fetch(`/api/parcels/${code}`);
       if (response.ok) {
@@ -46,7 +42,11 @@ export default function ParcelDetailsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [code]);
+
+  useEffect(() => {
+    fetchParcel();
+  }, [fetchParcel]);
 
   const handleNotify = async () => {
     if (!parcel) return;

@@ -1,36 +1,153 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# TAW Delivery - Système de Notification & Retrait de Colis
 
-## Getting Started
+Application Next.js multi-agences pour gérer l'arrivée des colis, notifier les destinataires par SMS, et tracker le processus jusqu'au retrait/livraison.
 
-First, run the development server:
+## 🚀 Tech Stack
 
+- **Framework**: Next.js 16.1.6 with App Router
+- **Language**: TypeScript 5
+- **Styling**: Tailwind CSS v4 with PostCSS
+- **Database**: Supabase (PostgreSQL)
+- **QR Code**: html5-qrcode
+- **Validation**: Zod
+- **Package Manager**: pnpm
+- **SMS**: Mboa SMS API
+
+## 📦 Features
+
+- **Multi-agency Management**: Support for multiple agencies with Row Level Security
+- **QR Code Scanning**: Scan parcel QR codes for quick registration
+- **SMS Notifications**: Automatic SMS notifications to recipients
+- **Delivery Tracking**: Track parcels from arrival to delivery
+- **Public Confirmation**: Recipients can choose pickup or delivery via short link
+- **Admin Dashboard**: Statistics and management interface
+- **Role-based Access**: Admin, Agent, and Delivery roles
+
+## 🛠️ Getting Started
+
+### Prerequisites
+
+- Node.js 20+ 
+- pnpm (install via `npm install -g pnpm`)
+- Supabase account
+- Mboa SMS account (for notifications)
+
+### Installation
+
+1. Clone the repository:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/ReachDem/taw-delivery.git
+cd taw-delivery
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Install dependencies:
+```bash
+pnpm install
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. Set up environment variables:
+```bash
+cp .env.local.example .env.local
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Then edit `.env.local` with your credentials:
+```env
+# Supabase
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 
-## Learn More
+# Mboa SMS
+MBOA_SMS_USERID=your-user-id
+MBOA_SMS_API_PASSWORD=your-api-password
+MBOA_SMS_SENDER_NAME=TAWDELIVERY
 
-To learn more about Next.js, take a look at the following resources:
+# App
+NEXT_PUBLIC_SHORT_DOMAIN=http://localhost:3000
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+4. Set up the database:
+   - Create a Supabase project
+   - Run the SQL schema from `lib/supabase/schema.sql`
+   - Set up Row Level Security policies
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+5. Run the development server:
+```bash
+pnpm dev
+```
 
-## Deploy on Vercel
+Open [http://localhost:3000](http://localhost:3000) with your browser.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 📁 Project Structure
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+taw-delivery/
+├── app/                    # Next.js App Router
+│   ├── (admin)/           # Protected admin routes
+│   │   ├── dashboard/     # Dashboard with stats
+│   │   ├── scan/          # QR code scanner
+│   │   ├── parcels/       # Parcel management
+│   │   ├── deliveries/    # Delivery management
+│   │   ├── login/         # Login page
+│   │   └── settings/      # Settings
+│   ├── c/[code]/          # Public confirmation page
+│   └── api/               # API routes
+├── components/            # Reusable components
+│   ├── layout/           # Layout components
+│   └── ui/               # UI components
+├── lib/                   # Utilities and libraries
+│   ├── supabase/         # Supabase client setup
+│   ├── sms/              # SMS integration
+│   ├── types.ts          # TypeScript types
+│   └── utils.ts          # Utility functions
+└── public/               # Static assets
+```
+
+## 🔧 Available Scripts
+
+```bash
+pnpm dev      # Start development server
+pnpm build    # Build for production
+pnpm start    # Start production server
+pnpm lint     # Run ESLint
+pnpm seed     # Seed database (if configured)
+```
+
+## 📊 Workflow
+
+1. **SCAN QR CODE** → Agent scans parcel QR code
+2. **REGISTRATION** → Agent fills form → Status: "ARRIVÉ"
+3. **NOTIFICATION** → SMS sent to recipient → Status: "EN_ATTENTE"
+4. **CONFIRMATION** → Recipient chooses pickup or delivery
+5. **DELIVERY** (if requested) → Status: "EN_LIVRAISON"
+6. **COMPLETION** → Status: "RETIRÉ" or "LIVRÉ"
+
+## 🔒 Security
+
+- Row Level Security (RLS) enabled on Supabase
+- Server-side SMS credentials (never exposed to client)
+- TypeScript for type safety
+- Environment variables for sensitive data
+
+## 📖 Documentation
+
+For detailed architecture and implementation details, see [PLAN.md](PLAN.md).
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 📄 License
+
+This project is private and proprietary.
+
+## 🔗 Links
+
+- [Next.js Documentation](https://nextjs.org/docs)
+- [Supabase Documentation](https://supabase.com/docs)
+- [Tailwind CSS Documentation](https://tailwindcss.com/docs)
+

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
@@ -44,11 +44,7 @@ export default function UsersPage() {
   });
   const [formError, setFormError] = useState<string | null>(null);
 
-  useEffect(() => {
-    loadData();
-  }, [search, agencyFilter, roleFilter]);
-
-  async function loadData() {
+  const loadData = useCallback(async () => {
     try {
       setLoading(true);
       
@@ -79,7 +75,11 @@ export default function UsersPage() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [search, agencyFilter, roleFilter]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   async function handleCreateUser(e: React.FormEvent) {
     e.preventDefault();
