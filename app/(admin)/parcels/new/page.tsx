@@ -1,12 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
-export default function NewParcelPage() {
+function NewParcelForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const codeFromScan = searchParams.get('code') || '';
@@ -211,5 +211,13 @@ export default function NewParcelPage() {
         </div>
       </form>
     </div>
+  );
+}
+
+export default function NewParcelPage() {
+  return (
+    <Suspense fallback={<div className="p-4">Chargement...</div>}>
+      <NewParcelForm />
+    </Suspense>
   );
 }
