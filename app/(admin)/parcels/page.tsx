@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Card } from '@/components/ui/card';
@@ -20,7 +20,7 @@ const STATUS_OPTIONS = [
   { value: 'LIVRÉ', label: 'Livré' },
 ];
 
-export default function ParcelsPage() {
+function ParcelsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   
@@ -240,5 +240,13 @@ export default function ParcelsPage() {
         )}
       </Card>
     </div>
+  );
+}
+
+export default function ParcelsPage() {
+  return (
+    <Suspense fallback={<div className="p-4">Chargement...</div>}>
+      <ParcelsContent />
+    </Suspense>
   );
 }
