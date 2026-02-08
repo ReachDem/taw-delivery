@@ -124,6 +124,33 @@ model Verification {
 }
 
 // ============================================
+// INVITATION SYSTEM
+// ============================================
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  EXPIRED
+  REVOKED
+}
+
+model Invitation {
+  id        String           @id @default(cuid())
+  email     String
+  role      Role             @default(AGENT)
+  agencyId  String?          // Agency to assign the user to
+  token     String           @unique
+  status    InvitationStatus @default(PENDING)
+  expiresAt DateTime
+  createdAt DateTime         @default(now())
+  invitedBy String           // User ID of the admin who sent the invitation
+
+  agency Agency? @relation(fields: [agencyId], references: [id])
+
+  @@map("invitation")
+}
+
+// ============================================
 // BUSINESS ENTITIES
 // ============================================
 
@@ -136,10 +163,11 @@ model Agency {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  agents    Agent[]
-  drivers   Driver[]
-  orders    Order[]
-  timeSlots TimeSlot[]
+  agents      Agent[]
+  drivers     Driver[]
+  orders      Order[]
+  timeSlots   TimeSlot[]
+  invitations Invitation[]
 
   @@map("agency")
 }
@@ -220,7 +248,7 @@ model Order {
 model DeliveryProposal {
   id              String        @id @default(uuid())
   orderId         String        @unique
-  tokenHash       String        @unique
+  code            String        @unique @db.VarChar(4) // 4-char alphanumeric code (e.g., AB12)
   expiresAt       DateTime
   decision        Decision      @default(PENDING)
   decidedAt       DateTime?
