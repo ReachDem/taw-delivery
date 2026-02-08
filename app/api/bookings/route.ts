@@ -27,77 +27,101 @@ export async function POST(request: Request) {
     if (!validation.success) return validation.error;
     const data = validation.data;
 
-    // Verify proposal exists and is accepted
-    const proposal = await prisma.deliveryProposal.findUnique({
-        where: { id: data.proposalId },
-        include: {
-            order: true,
-            booking: true,
-        },
-    });
+    try {
+        const result = await prisma.$transaction(async (tx) => {
+            // 1. Verify proposal exists and is accepted
+            const proposal = await tx.deliveryProposal.findUnique({
+                where: { id: data.proposalId },
+                include: {
+                    booking: true,
+                },
+            });
 
-    if (!proposal) {
-        return notFoundError("Proposition");
-    }
+            if (!proposal) {
+                throw new Error("PROPOSAL_NOT_FOUND");
+            }
 
-    if (proposal.decision !== "ACCEPTED") {
-        return apiError("La proposition doit être acceptée pour réserver un créneau", 400);
-    }
+            if (proposal.decision !== "ACCEPTED") {
+                throw new Error("PROPOSAL_NOT_ACCEPTED");
+            }
 
-    if (proposal.booking) {
-        return conflictError("Cette proposition a déjà un créneau réservé");
-    }
+            if (proposal.booking) {
+                throw new Error("PROPOSAL_ALREADY_BOOKED");
+            }
 
-    // Verify slot exists and is available
-    const slot = await prisma.timeSlot.findUnique({
-        where: { id: data.slotId },
-    });
+            // 2. Verify slot exists and check capacity locally first
+            const slot = await tx.timeSlot.findUnique({
+                where: { id: data.slotId },
+            });
 
-    if (!slot) {
-        return notFoundError("Créneau");
-    }
+            if (!slot) {
+                throw new Error("SLOT_NOT_FOUND");
+            }
 
-    if (slot.isLocked) {
-        return conflictError("Ce créneau est verrouillé");
-    }
+            if (slot.isLocked) {
+                throw new Error("SLOT_LOCKED");
+            }
 
-    if (slot.currentBookings >= slot.maxCapacity) {
-        return conflictError("Ce créneau est complet");
-    }
+            if (slot.currentBookings >= slot.maxCapacity) {
+                throw new Error("SLOT_FULL");
+            }
 
-    // Create booking in transaction
-    const [booking] = await prisma.$transaction([
-        prisma.booking.create({
-            data: {
-                slotId: data.slotId,
-                proposalId: data.proposalId,
-                position: slot.currentBookings + 1,
-            },
-            include: {
+            // 3. Atomically increment booking count
+            const updatedSlot = await tx.timeSlot.update({
+                where: { id: data.slotId },
+                data: { currentBookings: { increment: 1 } },
+            });
+
+            // 4. Double-check capacity after increment (race condition protection)
+            if (updatedSlot.currentBookings > updatedSlot.maxCapacity) {
+                throw new Error("SLOT_FULL_RACE");
+            }
+
+            // 5. Create booking
+            const booking = await tx.booking.create({
+                data: {
+                    slotId: data.slotId,
+                    proposalId: data.proposalId,
+                    position: updatedSlot.currentBookings, // Use the new count as position
+                },
+                include: {
+                    slot: {
+                        select: { slotDate: true, slotHour: true, agencyId: true },
+                    },
+                },
+            });
+
+            // 6. Update order status
+            await tx.order.update({
+                where: { id: proposal.orderId },
+                data: { status: OrderStatus.SCHEDULED },
+            });
+
+            return booking;
+        });
+
+        return apiResponse(
+            {
+                id: result.id,
+                position: result.position,
                 slot: {
-                    select: { slotDate: true, slotHour: true, agencyId: true },
+                    date: result.slot.slotDate,
+                    hour: result.slot.slotHour,
                 },
             },
-        }),
-        prisma.timeSlot.update({
-            where: { id: data.slotId },
-            data: { currentBookings: { increment: 1 } },
-        }),
-        prisma.order.update({
-            where: { id: proposal.orderId },
-            data: { status: OrderStatus.SCHEDULED },
-        }),
-    ]);
+            { status: 201 }
+        );
 
-    return apiResponse(
-        {
-            id: booking.id,
-            position: booking.position,
-            slot: {
-                date: booking.slot.slotDate,
-                hour: booking.slot.slotHour,
-            },
-        },
-        { status: 201 }
-    );
+    } catch (error: any) {
+        // Map transaction errors to API responses
+        if (error.message === "PROPOSAL_NOT_FOUND") return notFoundError("Proposition");
+        if (error.message === "PROPOSAL_NOT_ACCEPTED") return apiError("La proposition doit être acceptée pour réserver un créneau", 400);
+        if (error.message === "PROPOSAL_ALREADY_BOOKED") return conflictError("Cette proposition a déjà un créneau réservé");
+        if (error.message === "SLOT_NOT_FOUND") return notFoundError("Créneau");
+        if (error.message === "SLOT_LOCKED") return conflictError("Ce créneau est verrouillé");
+        if (error.message === "SLOT_FULL" || error.message === "SLOT_FULL_RACE") return conflictError("Ce créneau est complet");
+
+        console.error("Booking Transaction Error:", error);
+        return apiError("Erreur lors de la réservation", 500);
+    }
 }
