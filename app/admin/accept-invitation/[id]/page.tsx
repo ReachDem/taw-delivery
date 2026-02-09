@@ -136,10 +136,20 @@ function InvitationFlow({ invitationId }: { invitationId: string }) {
             });
             if (acceptError) throw acceptError;
 
+            // 3. Upgrade platform role to ADMIN (default is AGENT after sign-up)
+            const upgradeRes = await fetch("/api/auth/upgrade-role", {
+                method: "POST",
+                credentials: "include",
+            });
+            if (!upgradeRes.ok) {
+                console.warn("Role upgrade failed:", await upgradeRes.text());
+            }
+
             setStep("done");
             toast.success("Compte créé et invitation acceptée !");
 
-            setTimeout(() => router.push("/admin/dashboard"), 2000);
+            // Hard reload to force fresh session in proxy
+            setTimeout(() => { window.location.href = "/admin/dashboard"; }, 2000);
         } catch (err: any) {
             const message = err.message || "Une erreur est survenue";
             setError(message);
@@ -170,10 +180,20 @@ function InvitationFlow({ invitationId }: { invitationId: string }) {
             });
             if (acceptError) throw acceptError;
 
+            // 3. Upgrade platform role to ADMIN if needed
+            const upgradeRes = await fetch("/api/auth/upgrade-role", {
+                method: "POST",
+                credentials: "include",
+            });
+            if (!upgradeRes.ok) {
+                console.warn("Role upgrade failed:", await upgradeRes.text());
+            }
+
             setStep("done");
             toast.success("Invitation acceptée !");
 
-            setTimeout(() => router.push("/admin/dashboard"), 2000);
+            // Hard reload to force fresh session in proxy
+            setTimeout(() => { window.location.href = "/admin/dashboard"; }, 2000);
         } catch (err: any) {
             const message = err.message || "Une erreur est survenue";
             setError(message);

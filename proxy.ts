@@ -73,9 +73,8 @@ export async function proxy(request: NextRequest) {
 
         // /admin/* → SUPER_ADMIN or ADMIN only
         if (pathname.startsWith("/admin") && role !== "SUPER_ADMIN" && role !== "ADMIN") {
-            // Redirect non-admin roles to their own domain
-            const redirectUrl = getHomeByRole(role);
-            return NextResponse.redirect(new URL(redirectUrl, request.url));
+            // Non-admin users → send to login (safe: excluded from proxy)
+            return NextResponse.redirect(new URL("/admin/login", request.url));
         }
 
         return NextResponse.next();
@@ -102,7 +101,7 @@ export function getHomeByRole(role?: string): string {
         case "DRIVER":
             return "/admin/dashboard"; // Future: "/dlv"
         default:
-            return "/admin/dashboard";
+            return "/admin/login";
     }
 }
 

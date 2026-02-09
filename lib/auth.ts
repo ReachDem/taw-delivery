@@ -64,7 +64,7 @@ export const auth = betterAuth({
     },
     session: {
         expiresIn: 60 * 60 * 24, // 1 day
-        updateAge: 60 * 60, // Update every hour
+        updateAge: 0, // Always fetch fresh user data (role may change after invitation)
     },
     secret: process.env.BETTER_AUTH_SECRET!,
     baseURL: process.env.BETTER_AUTH_URL!,

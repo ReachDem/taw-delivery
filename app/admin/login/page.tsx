@@ -62,7 +62,17 @@ function LoginForm() {
                 redirectTo = "/admin/dashboard"; // Future: "/dlv"
             }
 
-            router.push(redirectTo);
+            // Upgrade role if user is member of an org but still has AGENT role
+            if (role === "AGENT") {
+                await fetch("/api/auth/upgrade-role", {
+                    method: "POST",
+                    credentials: "include",
+                });
+                redirectTo = "/admin/dashboard";
+            }
+
+            // Hard reload to ensure proxy sees fresh session
+            window.location.href = redirectTo;
             toast.success("Connexion réussie");
 
         } catch (err: any) {
