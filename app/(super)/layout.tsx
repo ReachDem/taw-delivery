@@ -1,5 +1,7 @@
-import { SidebarProvider } from "@/components/ui/sidebar";
+import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { SuperAdminSidebar } from "@/components/super-admin/sidebar";
+import { SuperAdminHeader } from "@/components/super-admin/header";
+import { Separator } from "@/components/ui/separator";
 
 export default function SuperAdminLayout({
     children,
@@ -8,12 +10,17 @@ export default function SuperAdminLayout({
 }) {
     return (
         <SidebarProvider>
-            <div className="flex min-h-screen w-full">
-                <SuperAdminSidebar />
-                <main className="flex-1 overflow-y-auto bg-background">
+            <SuperAdminSidebar />
+            <SidebarInset>
+                <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center gap-2 border-b bg-background px-4">
+                    <SidebarTrigger className="-ml-1" />
+                    <Separator orientation="vertical" className="mr-2 h-4" />
+                    <SuperAdminHeader />
+                </header>
+                <main className="flex-1 overflow-y-auto">
                     {children}
                 </main>
-            </div>
+            </SidebarInset>
         </SidebarProvider>
     );
 }

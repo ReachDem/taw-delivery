@@ -1,6 +1,12 @@
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
+import { organization } from "better-auth/plugins";
 import prisma from "@/lib/prisma";
+import { sendEmail } from "@/lib/email";
+import {
+    generateAdminInvitationEmail,
+    generateAdminInvitationTextEmail,
+} from "@/lib/email-templates";
 
 export const auth = betterAuth({
     database: prismaAdapter(prisma, {
@@ -8,26 +14,60 @@ export const auth = betterAuth({
     }),
     emailAndPassword: {
         enabled: true,
-        // Disable public signup - only admins can create accounts via invitations
-        signUp: {
-            enabled: false,
-        },
+        requireEmailVerification: false, // Invitations auto-verify email
     },
+    plugins: [
+        organization({
+            // Use Better-Auth default roles: owner, admin, member
+            // owner: Full control over organization
+            // admin: Full control except deleting org or changing owner
+            // member: Read-only access
+            async sendInvitationEmail(data) {
+                const inviteLink = `${process.env.NEXT_PUBLIC_APP_URL}/admin/accept-invitation/${data.id}`;
+
+                const emailHtml = generateAdminInvitationEmail({
+                    inviteeName: data.email,
+                    inviterName: data.inviter.user.name,
+                    role: data.role,
+                    agencyName: data.organization.name,
+                    invitationLink: inviteLink,
+                    expiresInDays: 7,
+                });
+
+                const emailText = generateAdminInvitationTextEmail({
+                    inviteeName: data.email,
+                    inviterName: data.inviter.user.name,
+                    role: data.role,
+                    agencyName: data.organization.name,
+                    invitationLink: inviteLink,
+                    expiresInDays: 7,
+                });
+
+                await sendEmail({
+                    to: data.email,
+                    subject: "Invitation à rejoindre TAW Delivery",
+                    html: emailHtml,
+                    text: emailText,
+                });
+            },
+        }),
+    ],
     user: {
         additionalFields: {
             role: {
                 type: "string",
                 required: false,
                 defaultValue: "AGENT",
-                input: false, // Ne pas permettre à l'utilisateur de définir son rôle
+                input: false, // Don't allow user to set their own role
             },
         },
     },
     session: {
-        expiresIn: 60 * 60 * 24, // 1 jour (24 heures)
-        updateAge: 60 * 60, // Mettre à jour toutes les heures
+        expiresIn: 60 * 60 * 24, // 1 day
+        updateAge: 60 * 60, // Update every hour
     },
+    secret: process.env.BETTER_AUTH_SECRET!,
+    baseURL: process.env.BETTER_AUTH_URL!,
 });
 
 export type Session = typeof auth.$Infer.Session;
-

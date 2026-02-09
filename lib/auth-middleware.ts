@@ -7,6 +7,21 @@ import { NextResponse } from "next/server";
 // ============================================
 // Auth Middleware
 // ============================================
+// 
+// Role architecture:
+// - user.role (Prisma enum): SUPER_ADMIN, ADMIN, AGENT, DRIVER
+//   → Platform-level role (what the user IS)
+//   → Controls route access: /super (SUPER_ADMIN), /admin (ADMIN), etc.
+//
+// - member.role (Better-Auth org): owner, admin, member
+//   → Organization-level role (permissions WITHIN an agency)
+//   → Controls what they can do inside their assigned agency
+//
+// SUPER_ADMIN: Can do everything. Routes /admin/* and /super/*.
+// ADMIN: Manages one agency. Routes /admin/*. Can invite agents/drivers.
+// AGENT: Booking agent. Routes /dashboard/* (future).
+// DRIVER: Delivery driver. Routes /dlv/* (future).
+// ============================================
 
 export type AuthSession = {
     user: {

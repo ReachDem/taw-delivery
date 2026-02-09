@@ -36,29 +36,3 @@ export async function generateUniqueCode(maxRetries = 10): Promise<string> {
     // If we exhaust retries, throw an error
     throw new Error("Impossible de générer un code unique après plusieurs tentatives");
 }
-
-/**
- * Generate a unique token for invitations
- * Uses longer format (32 chars) for security
- */
-export async function generateInvitationToken(maxRetries = 10): Promise<string> {
-    for (let i = 0; i < maxRetries; i++) {
-        // Generate 32-character token
-        let token = "";
-        for (let j = 0; j < 32; j++) {
-            token += CHARS.charAt(Math.floor(Math.random() * CHARS.length));
-        }
-
-        // Check if token already exists
-        const existing = await prisma.invitation.findUnique({
-            where: { token },
-            select: { id: true },
-        });
-
-        if (!existing) {
-            return token;
-        }
-    }
-
-    throw new Error("Impossible de générer un token unique après plusieurs tentatives");
-}

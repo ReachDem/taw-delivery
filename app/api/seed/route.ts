@@ -75,59 +75,84 @@ export async function GET() {
                     data: { role: user.role as any },
                 });
 
-                // Get or create Test Agency
+                // Get or create Test Agency & Organization
                 let agency = await prisma.agency.findFirst({
                     where: { name: "Test Agency" },
+                    include: { organization: true }
                 });
 
+                let organizationId = agency?.organizationId;
+
                 if (!agency) {
+                    // Create Organization first
+                    const org = await prisma.organization.create({
+                        data: {
+                            id: "test-agency-org",
+                            name: "Test Agency",
+                            slug: "test-agency",
+                            createdAt: new Date(),
+                        }
+                    });
+                    organizationId = org.id;
+
                     agency = await prisma.agency.create({
                         data: {
                             name: "Test Agency",
                             city: "Dakar",
                             address: "123 Rue Test",
                             phone: "+221771234567",
+                            organizationId: org.id
                         },
+                        include: { organization: true }
+                    });
+                } else if (!agency.organizationId) {
+                    // Link existing agency to new org if missing
+                    const org = await prisma.organization.create({
+                        data: {
+                            id: "test-agency-org",
+                            name: "Test Agency",
+                            slug: "test-agency",
+                            createdAt: new Date(),
+                        }
+                    });
+                    organizationId = org.id;
+                    await prisma.agency.update({
+                        where: { id: agency.id },
+                        data: { organizationId: org.id }
                     });
                 }
 
-                // Create Agent profile for all test users so they can create orders
+                // Add as Member to Organization
+                if (organizationId) {
+                    await prisma.member.create({
+                        data: {
+                            id: `member-${ctx.user.id}`,
+                            organizationId: organizationId,
+                            userId: ctx.user.id,
+                            role: user.role === "SUPER_ADMIN" ? "owner" : user.role === "ADMIN" ? "admin" : "member",
+                            createdAt: new Date(),
+                        }
+                    });
+                }
+
+                // Keep legacy Agent profile for now
                 await prisma.agent.create({
                     data: {
                         userId: ctx.user.id,
-                        agencyId: agency.id,
+                        agencyId: agency!.id,
                         firstName: user.name.split(" ")[0],
                         lastName: user.name.split(" ")[1] || "User",
                     },
                 });
 
-                results.push(`✅ Created user: ${user.email} (${user.role}) with Agent profile`);
+                results.push(`✅ Created user: ${user.email} (${user.role}) with Member & Agent profile`);
             } else {
                 results.push(`❌ Failed to create: ${user.email}`);
             }
         }
 
-        // Create a test agency
-        const existingAgency = await prisma.agency.findFirst({
-            where: { name: "Test Agency" },
-        });
-
-        if (!existingAgency) {
-            const agency = await prisma.agency.create({
-                data: {
-                    name: "Test Agency",
-                    city: "Dakar",
-                    address: "123 Rue Test",
-                    phone: "+221771234567",
-                },
-            });
-            results.push(`✅ Created Test Agency (ID: ${agency.id})`);
-        } else {
-            results.push(`⏭️ Test Agency already exists (ID: ${existingAgency.id})`);
-        }
-
         return apiResponse({
-            message: "Seed completed",
+            message: "Seed completed with Better-Auth Organizations",
             results,
             credentials: {
                 admin: { email: "testadmin@taw-delivery.com", password: "testpassword" },

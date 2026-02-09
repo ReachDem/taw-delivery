@@ -62,12 +62,12 @@ export function SuperAdminSidebar() {
 
     return (
         <Sidebar collapsible="icon">
-            <SidebarHeader className="border-b px-6 py-4">
+            <SidebarHeader className="flex h-16 border-b px-2">
                 <div className="flex items-center gap-2">
                     <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                        <Building2 className="h-4 w-4" />
+                        <Building2 className="h-5 w-5" />
                     </div>
-                    <div className="flex flex-col">
+                    <div className="flex flex-col group-data-[collapsible=icon]:hidden">
                         <span className="text-sm font-semibold">TAW Delivery</span>
                         <span className="text-xs text-muted-foreground">Super Admin</span>
                     </div>
@@ -86,7 +86,7 @@ export function SuperAdminSidebar() {
                                         tooltip={item.title}
                                     >
                                         <Link href={item.url}>
-                                            <item.icon className="h-4 w-4" />
+                                            <item.icon className="!h-5 !w-5" />
                                             <span>{item.title}</span>
                                         </Link>
                                     </SidebarMenuButton>

@@ -2,15 +2,12 @@
  * Tests unitaires pour lib/code-generator.ts
  */
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { generateUniqueCode, generateInvitationToken } from "@/lib/code-generator";
+import { generateUniqueCode } from "@/lib/code-generator";
 
 // Mock Prisma
 vi.mock("@/lib/prisma", () => ({
     default: {
         deliveryProposal: {
-            findUnique: vi.fn(),
-        },
-        invitation: {
             findUnique: vi.fn(),
         },
     },
@@ -60,39 +57,6 @@ describe("Code Generator", () => {
 
             await expect(generateUniqueCode(3)).rejects.toThrow("Impossible de générer un code unique");
             expect(prisma.deliveryProposal.findUnique).toHaveBeenCalledTimes(3);
-        });
-    });
-
-    describe("generateInvitationToken", () => {
-        beforeEach(() => {
-            vi.clearAllMocks();
-        });
-
-        it("should return a unique 32-char token when not found in DB", async () => {
-            vi.mocked(prisma.invitation.findUnique).mockResolvedValue(null);
-
-            const token = await generateInvitationToken();
-
-            expect(token).toHaveLength(32);
-            expect(prisma.invitation.findUnique).toHaveBeenCalled();
-        });
-
-        it("should retry if token already exists", async () => {
-            vi.mocked(prisma.invitation.findUnique)
-                .mockResolvedValueOnce({ id: "existing" } as any)
-                .mockResolvedValueOnce(null);
-
-            const token = await generateInvitationToken();
-
-            expect(token).toHaveLength(32);
-            expect(prisma.invitation.findUnique).toHaveBeenCalledTimes(2);
-        });
-
-        it("should throw error after max retries", async () => {
-            vi.mocked(prisma.invitation.findUnique).mockResolvedValue({ id: "existing" } as any);
-
-            await expect(generateInvitationToken(3)).rejects.toThrow("Impossible de générer un token unique");
-            expect(prisma.invitation.findUnique).toHaveBeenCalledTimes(3);
         });
     });
 });
