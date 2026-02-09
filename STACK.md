@@ -17,7 +17,7 @@ Application de gestion de livraison pour agences, permettant de proposer des cr√
 | **ORM** | Prisma |
 | **Auth** | Better-Auth |
 | **Ic√¥nes** | Lucide React |
-
+ ET PNPM POUR LES PACKAGES
 ---
 
 ## Stack Future (Milestone 2+)
