@@ -33,36 +33,34 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { getStaffMembers, getPendingInvitations, getAgencies, inviteStaffMember, revokeInvitation } from "@/app/actions/staff";
+import { authClient, useSession } from "@/lib/auth-client";
 
-export default function StaffPage() {
+export default function AdminStaffPage() {
+    const { data: session } = useSession();
     const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const [members, setMembers] = useState<any[]>([]);
     const [invitations, setInvitations] = useState<any[]>([]);
-    const [agencies, setAgencies] = useState<any[]>([]);
 
-    // Form data
+    // Form data — admin can only invite agents or drivers within their own agency
     const [email, setEmail] = useState("");
-    const [role, setRole] = useState("admin");
-    const [organizationId, setOrganizationId] = useState("");
+    const [role, setRole] = useState("member");
 
     const fetchData = async () => {
         setIsLoading(true);
         try {
-            const [membersData, invitationsData, agenciesData] = await Promise.all([
-                getStaffMembers(),
-                getPendingInvitations(),
-                getAgencies()
-            ]);
-
-            // Combine members and super admins for display?
-            // For now just show organization members
-            setMembers(membersData.members);
-            setInvitations(invitationsData);
-            setAgencies(agenciesData);
+            // Get the full organization to list members
+            const { data: org } = await authClient.organization.getFullOrganization();
+            if (org) {
+                // Filter out super admins — they belong to all agencies by default
+                const filteredMembers = (org.members || []).filter(
+                    (m: any) => m.user?.role !== "SUPER_ADMIN"
+                );
+                setMembers(filteredMembers);
+                setInvitations(org.invitations || []);
+            }
         } catch (error) {
             toast.error("Erreur lors du chargement des données");
         } finally {
@@ -75,22 +73,22 @@ export default function StaffPage() {
     }, []);
 
     const handleInvite = async () => {
-        if (!email || !organizationId) {
-            toast.error("Veuillez remplir tous les champs obligatoires");
+        if (!email) {
+            toast.error("Veuillez saisir un email");
             return;
         }
 
         setIsSubmitting(true);
         try {
-            await inviteStaffMember({
+            await authClient.organization.inviteMember({
                 email,
-                role,
-                organizationId
+                role: role as "member" | "admin",
             });
             toast.success("Invitation envoyée avec succès");
             setIsInviteDialogOpen(false);
             setEmail("");
-            fetchData(); // Refresh list
+            setRole("member");
+            fetchData();
         } catch (error: any) {
             toast.error(error.message || "Erreur lors de l'envoi de l'invitation");
         } finally {
@@ -102,7 +100,7 @@ export default function StaffPage() {
         if (!confirm("Voulez-vous vraiment révoquer cette invitation ?")) return;
 
         try {
-            await revokeInvitation(id);
+            await authClient.organization.cancelInvitation({ invitationId: id });
             toast.success("Invitation révoquée");
             fetchData();
         } catch (error) {
@@ -114,9 +112,9 @@ export default function StaffPage() {
         <div className="flex flex-col gap-6 p-6">
             <div className="flex items-center justify-between">
                 <div className="flex flex-col gap-2">
-                    <h1 className="text-3xl font-bold tracking-tight">Staff</h1>
+                    <h1 className="text-3xl font-bold tracking-tight">Personnel</h1>
                     <p className="text-muted-foreground">
-                        Gérer les administrateurs et le personnel
+                        Gérer les agents et livreurs de votre agence
                     </p>
                 </div>
                 <div className="flex gap-2">
@@ -134,7 +132,7 @@ export default function StaffPage() {
                             <DialogHeader>
                                 <DialogTitle>Inviter un membre</DialogTitle>
                                 <DialogDescription>
-                                    Envoyez une invitation par email pour rejoindre une organisation
+                                    Envoyez une invitation par email pour rejoindre votre agence
                                 </DialogDescription>
                             </DialogHeader>
                             <div className="grid gap-4 py-4">
@@ -155,23 +153,8 @@ export default function StaffPage() {
                                             <SelectValue />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="admin">Administrateur d&apos;agence</SelectItem>
-                                            <SelectItem value="member">Agent / Membre</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                                <div className="grid gap-2">
-                                    <Label htmlFor="agency">Agence / Organisation</Label>
-                                    <Select value={organizationId} onValueChange={setOrganizationId}>
-                                        <SelectTrigger id="agency">
-                                            <SelectValue placeholder="Sélectionner une agence" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {agencies.map((agency) => (
-                                                <SelectItem key={agency.organizationId || agency.id} value={agency.organizationId || agency.id}>
-                                                    {agency.name}
-                                                </SelectItem>
-                                            ))}
+                                            <SelectItem value="member">Agent</SelectItem>
+                                            <SelectItem value="admin">Livreur</SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </div>
@@ -182,7 +165,7 @@ export default function StaffPage() {
                                 </Button>
                                 <Button onClick={handleInvite} disabled={isSubmitting}>
                                     {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                    Envoyer l'invitation
+                                    Envoyer l&apos;invitation
                                 </Button>
                             </DialogFooter>
                         </DialogContent>
@@ -190,72 +173,70 @@ export default function StaffPage() {
                 </div>
             </div>
 
+            {/* Members Table */}
             <Card>
                 <CardHeader>
-                    <CardTitle>Membres des Organisations</CardTitle>
+                    <CardTitle>Membres de l&apos;agence</CardTitle>
                 </CardHeader>
                 <CardContent>
                     {isLoading ? (
-                        <TableSkeleton columns={6} rows={4} />
+                        <TableSkeleton columns={5} rows={4} />
                     ) : (
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Nom</TableHead>
-                                <TableHead>Email</TableHead>
-                                <TableHead>Rôle</TableHead>
-                                <TableHead>Organisation</TableHead>
-                                <TableHead>Ajouté le</TableHead>
-                                <TableHead className="text-right">Actions</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {members.length === 0 ? (
+                        <Table>
+                            <TableHeader>
                                 <TableRow>
-                                    <TableCell colSpan={6} className="text-center text-muted-foreground">
-                                        Aucun membre trouvé
-                                    </TableCell>
+                                    <TableHead>Nom</TableHead>
+                                    <TableHead>Email</TableHead>
+                                    <TableHead>Rôle</TableHead>
+                                    <TableHead>Ajouté le</TableHead>
+                                    <TableHead className="text-right">Actions</TableHead>
                                 </TableRow>
-                            ) : (
-                                members.map((member) => (
-                                    <TableRow key={member.id}>
-                                        <TableCell className="font-medium">{member.user.name}</TableCell>
-                                        <TableCell>{member.user.email}</TableCell>
-                                        <TableCell>
-                                            <Badge variant="secondary">{member.role}</Badge>
-                                        </TableCell>
-                                        <TableCell>{member.organization.name}</TableCell>
-                                        <TableCell>
-                                            {new Date(member.createdAt).toLocaleDateString()}
-                                        </TableCell>
-                                        <TableCell className="text-right">
-                                            <Button variant="ghost" size="sm">
-                                                Modifier
-                                            </Button>
+                            </TableHeader>
+                            <TableBody>
+                                {members.length === 0 ? (
+                                    <TableRow>
+                                        <TableCell colSpan={5} className="text-center text-muted-foreground">
+                                            Aucun membre trouvé
                                         </TableCell>
                                     </TableRow>
-                                ))
-                            )}
-                        </TableBody>
-                    </Table>
+                                ) : (
+                                    members.map((member: any) => (
+                                        <TableRow key={member.id}>
+                                            <TableCell className="font-medium">
+                                                {member.user?.name || "—"}
+                                            </TableCell>
+                                            <TableCell>{member.user?.email}</TableCell>
+                                            <TableCell>
+                                                <Badge variant="secondary">{member.role}</Badge>
+                                            </TableCell>
+                                            <TableCell>
+                                                {new Date(member.createdAt).toLocaleDateString("fr-FR")}
+                                            </TableCell>
+                                            <TableCell className="text-right">
+                                                <Button variant="ghost" size="sm">
+                                                    Modifier
+                                                </Button>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))
+                                )}
+                            </TableBody>
+                        </Table>
                     )}
                 </CardContent>
             </Card>
 
+            {/* Pending Invitations */}
             <Card>
                 <CardHeader>
                     <CardTitle>Invitations en attente</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    {isLoading ? (
-                        <TableSkeleton columns={6} rows={3} />
-                    ) : (
                     <Table>
                         <TableHeader>
                             <TableRow>
                                 <TableHead>Email</TableHead>
                                 <TableHead>Rôle</TableHead>
-                                <TableHead>Organisation</TableHead>
                                 <TableHead>Envoyée le</TableHead>
                                 <TableHead>Expire le</TableHead>
                                 <TableHead className="text-right">Actions</TableHead>
@@ -264,36 +245,40 @@ export default function StaffPage() {
                         <TableBody>
                             {invitations.length === 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={6} className="text-center text-muted-foreground">
+                                    <TableCell colSpan={5} className="text-center text-muted-foreground">
                                         Aucune invitation en attente
                                     </TableCell>
                                 </TableRow>
                             ) : (
-                                invitations.map((invitation) => (
-                                    <TableRow key={invitation.id}>
-                                        <TableCell className="font-medium">{invitation.email}</TableCell>
-                                        <TableCell>
-                                            <Badge variant="secondary">{invitation.role}</Badge>
-                                        </TableCell>
-                                        <TableCell>{invitation.organization.name}</TableCell>
-                                        <TableCell>{new Date(invitation.createdAt).toLocaleDateString()}</TableCell>
-                                        <TableCell>{new Date(invitation.expiresAt).toLocaleDateString()}</TableCell>
-                                        <TableCell className="text-right">
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                onClick={() => handleRevoke(invitation.id)}
-                                                className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                                            >
-                                                Révoquer
-                                            </Button>
-                                        </TableCell>
-                                    </TableRow>
-                                ))
+                                invitations
+                                    .filter((inv: any) => inv.status === "pending")
+                                    .map((invitation: any) => (
+                                        <TableRow key={invitation.id}>
+                                            <TableCell className="font-medium">{invitation.email}</TableCell>
+                                            <TableCell>
+                                                <Badge variant="secondary">{invitation.role}</Badge>
+                                            </TableCell>
+                                            <TableCell>
+                                                {new Date(invitation.createdAt).toLocaleDateString("fr-FR")}
+                                            </TableCell>
+                                            <TableCell>
+                                                {new Date(invitation.expiresAt).toLocaleDateString("fr-FR")}
+                                            </TableCell>
+                                            <TableCell className="text-right">
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    onClick={() => handleRevoke(invitation.id)}
+                                                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                                >
+                                                    Révoquer
+                                                </Button>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))
                             )}
                         </TableBody>
                     </Table>
-                    )}
                 </CardContent>
             </Card>
         </div>

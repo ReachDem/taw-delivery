@@ -6,8 +6,13 @@ import { headers } from "next/headers";
 
 export async function getStaffMembers() {
     // Get all members with their organization and user details
-    // We want to list all admins/staff across the system
+    // Exclude super admins — they belong to all agencies by default
     const members = await prisma.member.findMany({
+        where: {
+            user: {
+                role: { not: "SUPER_ADMIN" }
+            }
+        },
         include: {
             user: true,
             organization: true,
@@ -17,15 +22,7 @@ export async function getStaffMembers() {
         }
     });
 
-    // Also get Super Admins who might not be in an organization?
-    // Or just users with role SUPER_ADMIN?
-    const superAdmins = await prisma.user.findMany({
-        where: {
-            role: "SUPER_ADMIN"
-        }
-    });
-
-    return { members, superAdmins };
+    return { members };
 }
 
 export async function getPendingInvitations() {

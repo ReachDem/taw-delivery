@@ -1,143 +1,123 @@
 "use client";
 
-import { useSession } from "@/lib/auth-client";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { useRouter } from "next/navigation";
-import { authClient } from "@/lib/auth-client";
-import { Loader2 } from "lucide-react";
-import Link from "next/link";
-import { useEffect, useState } from "react";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Users, Package, TrendingUp, Calendar } from "lucide-react";
 
 export default function AdminDashboard() {
-    const { data: session, isPending } = useSession();
-    const router = useRouter();
-    const [activeOrg, setActiveOrg] = useState<any>(null);
-    const [memberRole, setMemberRole] = useState<string | null>(null);
-
-    // We check for active organization
-    useEffect(() => {
-        if (session?.session?.activeOrganizationId) {
-            authClient.organization.getFullOrganization().then(({ data }) => {
-                if (data) {
-                    setActiveOrg(data);
-                    // Find the current user's role within the organization
-                    const currentMember = data.members?.find(
-                        (m: any) => m.userId === session.user.id
-                    );
-                    if (currentMember) {
-                        setMemberRole(currentMember.role);
-                    }
-                }
-            });
-        }
-    }, [session]);
-
-    const handleSignOut = async () => {
-        await authClient.signOut({
-            fetchOptions: {
-                onSuccess: () => {
-                    router.push("/admin/login");
-                },
-            },
-        });
-    };
-
-    if (isPending) {
-        return (
-            <div className="flex items-center justify-center min-h-screen">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            </div>
-        );
-    }
-
-    if (!session) {
-        // Should result in unauthorized redirect by middleware, but handled here too.
-        router.push("/admin/login");
-        return null;
-    }
-
     return (
-        <div className="min-h-screen bg-gray-50 flex flex-col">
-            <header className="bg-white border-b px-6 py-4 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                    <span className="font-bold text-xl">Taw Delivery Admin</span>
-                    <Badge variant="outline">
-                        {session.user.role === "SUPER_ADMIN"
-                            ? "Super Admin"
-                            : session.user.role === "ADMIN"
-                                ? `Admin${memberRole ? ` (${memberRole})` : ""}`
-                                : memberRole || session.user.role || "Member"}
-                    </Badge>
-                </div>
-                <div className="flex items-center gap-4">
-                    <span>{session.user.email}</span>
-                    <Button variant="outline" onClick={handleSignOut}>
-                        Se déconnecter
-                    </Button>
-                </div>
-            </header>
+        <div className="flex flex-col gap-6 p-6">
+            <div className="flex flex-col gap-2">
+                <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+                <p className="text-muted-foreground">
+                    Vue d&apos;ensemble de votre agence
+                </p>
+            </div>
 
-            <main className="flex-1 p-8 grid gap-6">
-                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Organisation Active</CardTitle>
-                            <CardDescription>
-                                Gérée via Better-Auth Organization Plugin
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            {activeOrg ? (
-                                <div className="space-y-2">
-                                    <div className="text-2xl font-bold">{activeOrg.name}</div>
-                                    <div className="text-sm text-muted-foreground">{activeOrg.slug}</div>
-                                    {session.user.role === "SUPER_ADMIN" && (
-                                        <div className="mt-4 pt-4 border-t">
-                                            <Link href="/super/staff" className="text-primary hover:underline">
-                                                Gérer le personnel (Super Admin) &rarr;
-                                            </Link>
-                                        </div>
-                                    )}
-                                </div>
-                            ) : (
-                                <div className="text-muted-foreground">
-                                    Aucune organisation active sélectionnée.
-                                    <div className="mt-2 text-sm italic">
-                                        (Utilisez le sélecteur d'organisation si disponible)
-                                    </div>
-                                </div>
-                            )}
-                        </CardContent>
-                    </Card>
+            {/* Stats Cards */}
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">
+                            Personnel Actif
+                        </CardTitle>
+                        <Users className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">8</div>
+                        <p className="text-xs text-muted-foreground">
+                            Agents &amp; Livreurs
+                        </p>
+                    </CardContent>
+                </Card>
 
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Actions Rapides</CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-2">
-                            {session.user.role === "SUPER_ADMIN" && (
-                                <Link href="/super/staff">
-                                    <Button variant="ghost" className="w-full justify-start">
-                                        Gérer tout le personnel
-                                    </Button>
-                                </Link>
-                            )}
-                            {(session.user.role === "ADMIN" || session.user.role === "SUPER_ADMIN") && (
-                                <>
-                                    <Button variant="ghost" className="w-full justify-start" disabled>
-                                        Inviter un agent / livreur
-                                    </Button>
-                                    <Button variant="ghost" className="w-full justify-start" disabled>
-                                        Gérer les commandes
-                                    </Button>
-                                </>
-                            )}
-                        </CardContent>
-                    </Card>
-                </div>
-            </main>
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">
+                            Commandes du jour
+                        </CardTitle>
+                        <Package className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">23</div>
+                        <p className="text-xs text-muted-foreground">
+                            +5 depuis ce matin
+                        </p>
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">
+                            Créneaux disponibles
+                        </CardTitle>
+                        <Calendar className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">6</div>
+                        <p className="text-xs text-muted-foreground">
+                            Sur 10 créneaux aujourd&apos;hui
+                        </p>
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">
+                            Taux de livraison
+                        </CardTitle>
+                        <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">92%</div>
+                        <p className="text-xs text-muted-foreground">
+                            +3% vs semaine dernière
+                        </p>
+                    </CardContent>
+                </Card>
+            </div>
+
+            {/* Recent Activity */}
+            <Card>
+                <CardHeader>
+                    <CardTitle>Activité Récente</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="space-y-4">
+                        <div className="flex items-center gap-4 text-sm">
+                            <div className="flex h-2 w-2 rounded-full bg-green-500" />
+                            <div className="flex-1">
+                                <p className="font-medium">Commande livrée</p>
+                                <p className="text-muted-foreground">CMD-042 - Mamadou Diop</p>
+                            </div>
+                            <span className="text-muted-foreground">Il y a 30min</span>
+                        </div>
+                        <div className="flex items-center gap-4 text-sm">
+                            <div className="flex h-2 w-2 rounded-full bg-blue-500" />
+                            <div className="flex-1">
+                                <p className="font-medium">Nouvel agent ajouté</p>
+                                <p className="text-muted-foreground">Fatou Sow</p>
+                            </div>
+                            <span className="text-muted-foreground">Il y a 2h</span>
+                        </div>
+                        <div className="flex items-center gap-4 text-sm">
+                            <div className="flex h-2 w-2 rounded-full bg-yellow-500" />
+                            <div className="flex-1">
+                                <p className="font-medium">Créneau complet</p>
+                                <p className="text-muted-foreground">10:00 - 11:00 demain</p>
+                            </div>
+                            <span className="text-muted-foreground">Il y a 4h</span>
+                        </div>
+                        <div className="flex items-center gap-4 text-sm">
+                            <div className="flex h-2 w-2 rounded-full bg-green-500" />
+                            <div className="flex-1">
+                                <p className="font-medium">Commande acceptée</p>
+                                <p className="text-muted-foreground">CMD-041 - Awa Ndiaye</p>
+                            </div>
+                            <span className="text-muted-foreground">Il y a 6h</span>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
         </div>
     );
 }

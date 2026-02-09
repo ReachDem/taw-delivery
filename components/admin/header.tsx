@@ -25,37 +25,36 @@ import { authClient, useSession } from "@/lib/auth-client";
 
 // Route mapping for breadcrumb
 const routeMap: Record<string, string> = {
-    "/super": "Dashboard",
-    "/super/agencies": "Agences",
-    "/super/staff": "Staff",
-    "/super/orders": "Commandes",
-    "/super/slots": "Créneaux",
-    "/super/settings": "Paramètres",
+    "/admin/dashboard": "Dashboard",
+    "/admin/dashboard/staff": "Personnel",
+    "/admin/dashboard/orders": "Commandes",
+    "/admin/dashboard/slots": "Créneaux",
+    "/admin/dashboard/settings": "Paramètres",
 };
 
 // Mock notifications
 const notifications = [
     {
         id: 1,
-        title: "Nouvelle agence créée",
-        description: "Agence Dakar Centre",
-        time: "Il y a 2h",
+        title: "Nouvelle commande reçue",
+        description: "Commande #CMD-042",
+        time: "Il y a 30min",
     },
     {
         id: 2,
-        title: "Nouvel administrateur invité",
-        description: "admin@example.com",
-        time: "Il y a 5h",
+        title: "Livreur assigné",
+        description: "Moussa Ba - Commande #CMD-039",
+        time: "Il y a 2h",
     },
     {
         id: 3,
-        title: "Pic de commandes détecté",
-        description: "Agence Plateau",
-        time: "Il y a 1j",
+        title: "Créneau complet",
+        description: "10:00 - 11:00 demain",
+        time: "Il y a 4h",
     },
 ];
 
-export function SuperAdminHeader() {
+export function AdminHeader() {
     const pathname = usePathname();
     const router = useRouter();
     const { data: session } = useSession();
@@ -63,10 +62,10 @@ export function SuperAdminHeader() {
     // Build breadcrumb items
     const getBreadcrumbItems = () => {
         const items = [
-            { href: "/super", label: "Dashboard", isLast: pathname === "/super" },
+            { href: "/admin/dashboard", label: "Dashboard", isLast: pathname === "/admin/dashboard" },
         ];
 
-        if (pathname !== "/super") {
+        if (pathname !== "/admin/dashboard") {
             const currentPage = routeMap[pathname] || "Page";
             items.push({ href: pathname, label: currentPage, isLast: true });
         }
@@ -109,7 +108,7 @@ export function SuperAdminHeader() {
                 </BreadcrumbList>
             </Breadcrumb>
 
-            {/* Right Side: Search + Notifications + Profile */}
+            {/* Right Side: Search + Notifications + Sign Out */}
             <div className="flex items-center gap-3">
                 {/* Search Bar */}
                 <div className="relative">
@@ -160,15 +159,15 @@ export function SuperAdminHeader() {
                     </DropdownMenuContent>
                 </DropdownMenu>
 
-                {/* Profile + Sign out */}
+                {/* User info + Sign out */}
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="sm" className="gap-2">
                             <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-medium">
-                                {session?.user?.name?.[0]?.toUpperCase() || session?.user?.email?.[0]?.toUpperCase() || "S"}
+                                {session?.user?.name?.[0]?.toUpperCase() || session?.user?.email?.[0]?.toUpperCase() || "A"}
                             </div>
                             <span className="hidden md:inline text-sm">
-                                {session?.user?.name || session?.user?.email || "Super Admin"}
+                                {session?.user?.name || session?.user?.email || "Admin"}
                             </span>
                         </Button>
                     </DropdownMenuTrigger>
