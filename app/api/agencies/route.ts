@@ -24,9 +24,8 @@ const createAgencySchema = z.object({
 // ============================================
 
 export async function GET(request: Request) {
-    // TODO: Re-enable auth later
-    // const [session, authError] = await requireAdmin();
-    // if (authError) return authError;
+    const [session, authError] = await requireAdmin();
+    if (authError) return authError;
 
     const params = parseSearchParams(request);
     const { city, search, page = "1", limit = "10" } = params;
@@ -78,9 +77,8 @@ export async function GET(request: Request) {
 // ============================================
 
 export async function POST(request: Request) {
-    // TODO: Re-enable auth later (SUPER_ADMIN only)
-    // const [session, authError] = await requireSuperAdmin();
-    // if (authError) return authError;
+    const [session, authError] = await requireSuperAdmin();
+    if (authError) return authError;
 
     const validation = await validateBody(request, createAgencySchema);
     if (!validation.success) return validation.error;
