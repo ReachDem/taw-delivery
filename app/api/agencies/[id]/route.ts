@@ -5,6 +5,7 @@ import {
     apiError,
     validateBody,
     notFoundError,
+    forbiddenError,
 } from "@/lib/api-helpers";
 import { requireAdmin, requireSuperAdmin } from "@/lib/auth-middleware";
 
@@ -61,6 +62,22 @@ export async function GET(request: Request, { params }: RouteParams) {
 
     if (!agency) {
         return notFoundError("Agence");
+    }
+
+    // Verify user has access to this agency (unless SUPER_ADMIN)
+    if (session.user.role !== "SUPER_ADMIN") {
+        if (!agency.organizationId) {
+            return notFoundError("Agence");
+        }
+        const membership = await prisma.member.findFirst({
+            where: {
+                userId: session.user.id,
+                organizationId: agency.organizationId,
+            },
+        });
+        if (!membership) {
+            return forbiddenError();
+        }
     }
 
     return apiResponse(agency);

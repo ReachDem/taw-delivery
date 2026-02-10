@@ -53,6 +53,8 @@ interface Member {
 
 interface Invitation {
     id: string;
+    createdAt: string;
+    expiresAt: string;
     email: string;
     role: string;
     status: string;
@@ -200,8 +202,8 @@ export default function StaffPage() {
                                             <SelectValue placeholder="Sélectionner une agence" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            {agencies.map((agency) => (
-                                                <SelectItem key={agency.organizationId} value={agency.organizationId!}>
+                                            {agencies.filter(agency => agency.organizationId).map((agency) => (
+                                                <SelectItem key={agency.id} value={agency.organizationId!}>
                                                     {agency.name}
                                                 </SelectItem>
                                             ))}

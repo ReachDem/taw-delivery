@@ -6,6 +6,7 @@ import {
     validateBody,
     notFoundError,
     parseSearchParams,
+    forbiddenError,
 } from "@/lib/api-helpers";
 import { requireAdmin } from "@/lib/auth-middleware";
 
@@ -92,13 +93,28 @@ export async function POST(request: Request, { params }: RouteParams) {
     if (!validation.success) return validation.error;
     const data = validation.data;
 
-    // Verify agency exists
+    // Verify agency exists and user has access
     const agency = await prisma.agency.findUnique({
         where: { id },
     });
 
     if (!agency) {
         return notFoundError("Agence");
+    }
+
+    if (session.user.role !== "SUPER_ADMIN") {
+        if (!agency.organizationId) {
+            return forbiddenError();
+        }
+        const membership = await prisma.member.findFirst({
+            where: {
+                userId: session.user.id,
+                organizationId: agency.organizationId,
+            },
+        });
+        if (!membership) {
+            return forbiddenError();
+        }
     }
 
     // Validate dates
