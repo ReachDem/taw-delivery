@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 
 // DELETE /api/agencies/cleanup - Delete all test agencies with cascade
-export async function DELETE(request: NextRequest) {
+export async function DELETE(request: NextRequest) {    if (process.env.NODE_ENV === "production") {        return NextResponse.json({ error: "This endpoint is not available in production" }, { status: 403 });    }
     try {
         // List all agencies first
         const agencies = await prisma.agency.findMany({
