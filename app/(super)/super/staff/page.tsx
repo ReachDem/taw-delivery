@@ -168,7 +168,7 @@ export default function StaffPage() {
                                         </SelectTrigger>
                                         <SelectContent>
                                             {agencies.map((agency) => (
-                                                <SelectItem key={agency.organizationId || agency.id} value={agency.organizationId || agency.id}>
+                                                <SelectItem key={agency.organizationId} value={agency.organizationId!}>
                                                     {agency.name}
                                                 </SelectItem>
                                             ))}
