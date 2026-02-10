@@ -10,7 +10,7 @@ Ce premier milestone vise à poser toute l’architecture logicielle et organisa
 
 ## Goals
 
-### Business Goalsenvoi
+### Business Goals
 
 * Réduire de 30 % le taux de no-shows sur les livraisons sous 6 mois.
 

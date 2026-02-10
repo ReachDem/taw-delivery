@@ -96,7 +96,12 @@ export default function AgenciesPage() {
                 </div>
 
                 {/* Create Dialog */}
-                <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+                <Dialog open={isCreateDialogOpen} onOpenChange={(isOpen) => {
+                    setIsCreateDialogOpen(isOpen);
+                    if (isOpen) {
+                        setFormData({ name: "", address: "", city: "", phone: "" });
+                    }
+                }}>
                     <DialogTrigger asChild>
                         <Button>
                             <Plus className="mr-2 h-4 w-4" />

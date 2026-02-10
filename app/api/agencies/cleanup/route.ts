@@ -1,8 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import { requireSuperAdmin } from "@/lib/auth-middleware";
 
 // DELETE /api/agencies/cleanup - Delete all test agencies with cascade
-export async function DELETE(request: NextRequest) {    if (process.env.NODE_ENV === "production") {        return NextResponse.json({ error: "This endpoint is not available in production" }, { status: 403 });    }
+export async function DELETE(request: NextRequest) {
+    // Restrict to development/test environments and SUPER_ADMIN only
+    if (process.env.NODE_ENV === "production") {
+        return NextResponse.json(
+            { error: "This endpoint is not available in production" },
+            { status: 403 }
+        );
+    }
+
+    const [session, authError] = await requireSuperAdmin();
+    if (authError) return authError;
+
     try {
         // List all agencies first
         const agencies = await prisma.agency.findMany({

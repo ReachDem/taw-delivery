@@ -35,14 +35,46 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { getStaffMembers, getPendingInvitations, getAgencies, inviteStaffMember, revokeInvitation } from "@/app/actions/staff";
 
+interface Member {
+    id: string;
+    role: string;
+    user: {
+        id: string;
+        name: string;
+        email: string;
+        role: string;
+    };
+    organization: {
+        id: string;
+        name: string;
+    };
+}
+
+interface Invitation {
+    id: string;
+    email: string;
+    role: string;
+    status: string;
+    organization: {
+        id: string;
+        name: string;
+    };
+}
+
+interface Agency {
+    id: string;
+    name: string;
+    organizationId: string | null;
+}
+
 export default function StaffPage() {
     const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const [members, setMembers] = useState<any[]>([]);
-    const [invitations, setInvitations] = useState<any[]>([]);
-    const [agencies, setAgencies] = useState<any[]>([]);
+    const [members, setMembers] = useState<Member[]>([]);
+    const [invitations, setInvitations] = useState<Invitation[]>([]);
+    const [agencies, setAgencies] = useState<Agency[]>([]);
 
     // Form data
     const [email, setEmail] = useState("");

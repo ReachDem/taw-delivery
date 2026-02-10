@@ -39,19 +39,22 @@ export async function POST() {
         }
 
         // Verify the user is actually a member of an organization
-        // (proves they accepted an invitation)
+        // and has admin or owner role in the organization (not just a regular member)
         const membership = await prisma.member.findFirst({
-            where: { userId },
+            where: {
+                userId,
+                role: { in: ["admin", "owner"] }
+            },
         });
 
         if (!membership) {
             return NextResponse.json(
-                { error: "Aucune organisation trouvée. Acceptez d'abord une invitation." },
+                { error: "Vous devez avoir un rôle d'admin dans une organisation pour être promu ADMIN." },
                 { status: 403 }
             );
         }
 
-        // Upgrade user role to ADMIN
+        // Upgrade user role to ADMIN only if they have admin/owner org role
         await prisma.user.update({
             where: { id: userId },
             data: { role: Role.ADMIN },

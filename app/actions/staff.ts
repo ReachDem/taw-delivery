@@ -5,6 +5,19 @@ import prisma from "@/lib/prisma";
 import { headers } from "next/headers";
 
 export async function getStaffMembers() {
+    // Verify user is authenticated and has SUPER_ADMIN or ADMIN role
+    const session = await auth.api.getSession({
+        headers: await headers()
+    });
+
+    if (!session?.user) {
+        throw new Error("Non authentifié");
+    }
+
+    if (session.user.role !== "SUPER_ADMIN" && session.user.role !== "ADMIN") {
+        throw new Error("Accès non autorisé");
+    }
+
     // Get all members with their organization and user details
     // Exclude super admins — they belong to all agencies by default
     const members = await prisma.member.findMany({
@@ -26,6 +39,19 @@ export async function getStaffMembers() {
 }
 
 export async function getPendingInvitations() {
+    // Verify user is authenticated and has SUPER_ADMIN or ADMIN role
+    const session = await auth.api.getSession({
+        headers: await headers()
+    });
+
+    if (!session?.user) {
+        throw new Error("Non authentifié");
+    }
+
+    if (session.user.role !== "SUPER_ADMIN" && session.user.role !== "ADMIN") {
+        throw new Error("Accès non autorisé");
+    }
+
     const invitations = await prisma.invitation.findMany({
         where: {
             status: "pending"
@@ -41,6 +67,15 @@ export async function getPendingInvitations() {
 }
 
 export async function getAgencies() {
+    // Verify user is authenticated
+    const session = await auth.api.getSession({
+        headers: await headers()
+    });
+
+    if (!session?.user) {
+        throw new Error("Non authentifié");
+    }
+
     return await prisma.agency.findMany({
         orderBy: { name: 'asc' }
     });

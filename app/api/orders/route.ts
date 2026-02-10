@@ -32,12 +32,41 @@ export async function GET(request: Request) {
     const params = parseSearchParams(request);
     const { agencyId, status, clientId } = params;
 
+    // Build where clause - filter by user's agency unless SUPER_ADMIN
+    const where: any = {
+        ...(status && { status: status as OrderStatus }),
+        ...(clientId && { clientId }),
+    };
+
+    // Super Admins can see all orders
+    if (session.user.role !== "SUPER_ADMIN") {
+        // For ADMIN/AGENT/DRIVER, get their agency
+        const userAgent = await prisma.agent.findUnique({
+            where: { userId: session.user.id },
+            select: { agencyId: true },
+        });
+
+        if (!userAgent) {
+            return apiResponse([]);
+        }
+
+        // Filter by user's agency (or specific agencyId if provided and matches)
+        if (agencyId) {
+            // Only allow filtering by their own agency
+            if (agencyId !== userAgent.agencyId) {
+                return apiResponse([]);
+            }
+            where.agencyId = agencyId;
+        } else {
+            where.agencyId = userAgent.agencyId;
+        }
+    } else if (agencyId) {
+        // Super Admin with specific agency filter
+        where.agencyId = agencyId;
+    }
+
     const orders = await prisma.order.findMany({
-        where: {
-            ...(agencyId && { agencyId }),
-            ...(status && { status: status as OrderStatus }),
-            ...(clientId && { clientId }),
-        },
+        where,
         orderBy: { createdAt: "desc" },
         take: 50,
         include: {
