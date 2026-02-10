@@ -28,9 +28,8 @@ interface RouteParams {
 // ============================================
 
 export async function GET(request: Request, { params }: RouteParams) {
-    // TODO: Re-enable auth later
-    // const [session, authError] = await requireAdmin();
-    // if (authError) return authError;
+    const [session, authError] = await requireAdmin();
+    if (authError) return authError;
 
     const { id } = await params;
 
@@ -72,9 +71,8 @@ export async function GET(request: Request, { params }: RouteParams) {
 // ============================================
 
 export async function PATCH(request: Request, { params }: RouteParams) {
-    // TODO: Re-enable auth later (SUPER_ADMIN only)
-    // const [session, authError] = await requireSuperAdmin();
-    // if (authError) return authError;
+    const [session, authError] = await requireSuperAdmin();
+    if (authError) return authError;
 
     const { id } = await params;
 
@@ -124,9 +122,8 @@ export async function PATCH(request: Request, { params }: RouteParams) {
 // ============================================
 
 export async function DELETE(request: Request, { params }: RouteParams) {
-    // TODO: Re-enable auth later (SUPER_ADMIN only)
-    // const [session, authError] = await requireSuperAdmin();
-    // if (authError) return authError;
+    const [session, authError] = await requireSuperAdmin();
+    if (authError) return authError;
 
     const { id } = await params;
 
