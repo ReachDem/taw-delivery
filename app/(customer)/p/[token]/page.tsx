@@ -2,11 +2,11 @@ import { notFound } from "next/navigation";
 import prisma from "@/lib/prisma";
 
 interface ProposalPageProps {
-    params: Promise<{ token: string }>;
+    params: { token: string };
 }
 
 export default async function ProposalPage({ params }: ProposalPageProps) {
-    const { token } = await params;
+    const { token } = params;
 
     // Fetch proposal by code (4-char alphanumeric)
     const proposal = await prisma.deliveryProposal.findUnique({
