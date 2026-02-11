@@ -5,6 +5,7 @@ import {
     apiResponse,
     apiError,
     validateBody,
+    forbiddenError,
 } from "@/lib/api-helpers";
 import { requireAdmin } from "@/lib/auth-middleware";
 
@@ -84,6 +85,16 @@ export async function POST(request: Request) {
 
     if (!agency) {
         return apiError("Agence non trouvée", 404);
+    }
+
+    // Security check: ensure admin belongs to the agency
+    if (session.user.role !== "SUPER_ADMIN") {
+        const adminMember = await prisma.member.findFirst({
+            where: { userId: session.user.id, organizationId: agency.organizationId },
+        });
+        if (!adminMember) {
+            return forbiddenError();
+        }
     }
 
     const driver = await prisma.driver.create({
