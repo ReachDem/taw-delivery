@@ -1,0 +1,350 @@
+// Prisma Schema for TAW-Delivery
+// Stack: Neon + Prisma + Better-Auth
+
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ============================================
+// ENUMS
+// ============================================
+
+enum Role {
+  AGENT
+  ADMIN
+  DRIVER
+  SUPER_ADMIN
+}
+
+enum OrderStatus {
+  PENDING
+  PROPOSAL_SENT
+  WAITING_RESPONSE
+  ACCEPTED
+  REFUSED
+  SCHEDULED
+  IN_DELIVERY
+  DELIVERED
+  CANCELLED
+}
+
+enum Decision {
+  PENDING
+  ACCEPTED
+  REFUSED
+  EXPIRED
+}
+
+enum PaymentChoice {
+  PAY_ON_DELIVERY
+  ALREADY_PAID
+  EXEMPT
+}
+
+enum MessageChannel {
+  SMS
+  EMAIL
+}
+
+enum MessageStatus {
+  PENDING
+  SENT
+  DELIVERED
+  FAILED
+}
+
+// ============================================
+// BETTER-AUTH TABLES
+// ============================================
+
+model User {
+  id            String   @id @default(cuid())
+  name          String
+  email         String   @unique
+  emailVerified Boolean  @default(false)
+  image         String?
+  role          Role     @default(AGENT)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  sessions Session[]
+  accounts Account[]
+  agent    Agent?
+  driver   Driver?
+
+  members     Member[]
+  invitations Invitation[]
+
+  @@map("user")
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  activeOrganizationId String?
+
+  @@map("session")
+  @@index([userId])
+}
+
+model Account {
+  id           String    @id @default(cuid())
+  userId       String
+  accountId    String
+  providerId   String
+  accessToken  String?
+  refreshToken String?
+  expiresAt    DateTime?
+  password     String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+
+  @@map("account")
+  @@index([userId])
+}
+
+model Verification {
+  id         String   @id @default(cuid())
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("verification")
+  @@index([identifier])
+}
+
+// ============================================
+// INVITATION SYSTEM
+// ============================================
+
+model Invitation {
+  id             String       @id @default(cuid())
+  email          String
+  role           String       @default("member") // "owner" | "admin" | "member"
+  status         String       @default("pending") // "pending" | "accepted" | "rejected" | "canceled"
+  expiresAt      DateTime
+  createdAt      DateTime     @default(now())
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  inviterId      String
+  user           User         @relation(fields: [inviterId], references: [id], onDelete: Cascade)
+
+  @@map("invitation")
+  @@index([organizationId])
+  @@index([email])
+}
+
+// ============================================
+// BUSINESS ENTITIES
+// ============================================
+
+model Agency {
+  id             String   @id @default(uuid())
+  name           String
+  address        String
+  city           String
+  phone          String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  organizationId String?  @unique // Link to Better-Auth Organization
+
+  agents      Agent[]
+  drivers     Driver[]
+  orders      Order[]
+  timeSlots   TimeSlot[]
+  organization Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+
+  @@map("agency")
+}
+
+model Agent {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  agencyId  String
+  firstName String
+  lastName  String
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  agency Agency  @relation(fields: [agencyId], references: [id])
+  orders Order[]
+
+  @@map("agent")
+}
+
+model Driver {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  agencyId  String
+  firstName String
+  lastName  String
+  phone     String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  agency Agency  @relation(fields: [agencyId], references: [id])
+  orders Order[]
+
+  @@map("driver")
+}
+
+model Client {
+  id                String   @id @default(uuid())
+  firstName         String
+  lastName          String
+  phone             String   @unique
+  email             String?
+  address           String?
+  city              String?
+  preferredLanguage String   @default("fr")
+  createdAt         DateTime @default(now())
+
+  orders Order[]
+
+  @@map("client")
+}
+
+model Order {
+  id                  String      @id @default(uuid())
+  orderNumber         String      @unique @default(cuid())
+  clientId            String
+  agentId             String
+  agencyId            String
+  driverId            String?
+  productDescription  String
+  amount              Decimal     @db.Decimal(10, 2)
+  status              OrderStatus @default(PENDING)
+  specialInstructions String?
+  createdAt           DateTime    @default(now())
+  updatedAt           DateTime    @updatedAt
+
+  client   Client            @relation(fields: [clientId], references: [id])
+  agent    Agent             @relation(fields: [agentId], references: [id])
+  agency   Agency            @relation(fields: [agencyId], references: [id])
+  driver   Driver?           @relation(fields: [driverId], references: [id])
+  proposal DeliveryProposal?
+  messages MessageLog[]
+
+  @@map("order")
+}
+
+model DeliveryProposal {
+  id              String         @id @default(uuid())
+  orderId         String         @unique
+  code            String         @unique @db.VarChar(4) // 4-char alphanumeric code (e.g., AB12)
+  expiresAt       DateTime
+  decision        Decision       @default(PENDING)
+  decidedAt       DateTime?
+  deliveryAddress String?
+  latitude        Decimal?       @db.Decimal(10, 8)
+  longitude       Decimal?       @db.Decimal(11, 8)
+  paymentChoice   PaymentChoice?
+  createdAt       DateTime       @default(now())
+
+  order   Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  booking Booking?
+
+  @@map("delivery_proposal")
+}
+
+model TimeSlot {
+  id              String   @id @default(uuid())
+  agencyId        String
+  slotDate        DateTime @db.Date
+  slotHour        Int // 9, 10, 11... 16
+  maxCapacity     Int      @default(4)
+  currentBookings Int      @default(0)
+  isLocked        Boolean  @default(false)
+  createdAt       DateTime @default(now())
+
+  agency   Agency    @relation(fields: [agencyId], references: [id])
+  bookings Booking[]
+
+  @@unique([agencyId, slotDate, slotHour])
+  @@map("time_slot")
+}
+
+model Booking {
+  id         String   @id @default(uuid())
+  slotId     String
+  proposalId String   @unique
+  position   Int // 1, 2, 3, 4
+  createdAt  DateTime @default(now())
+
+  slot     TimeSlot         @relation(fields: [slotId], references: [id])
+  proposal DeliveryProposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+
+  @@map("booking")
+}
+
+model MessageLog {
+  id          String         @id @default(uuid())
+  orderId     String
+  channel     MessageChannel
+  recipient   String
+  content     String
+  status      MessageStatus  @default(PENDING)
+  externalId  String?
+  sentAt      DateTime?
+  deliveredAt DateTime?
+  createdAt   DateTime       @default(now())
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@map("message_log")
+}
+
+model Organization {
+  id          String       @id
+  name        String
+  slug        String
+  logo        String?
+  createdAt   DateTime
+  metadata    String?
+  members     Member[]
+  invitations Invitation[]
+  agencies    Agency[] // Link to our Agency model
+
+  @@unique([slug])
+  @@map("organization")
+}
+
+model Member {
+  id             String       @id
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role           String       @default("member")
+  createdAt      DateTime
+
+  @@index([organizationId])
+  @@index([userId])
+  @@map("member")
+}

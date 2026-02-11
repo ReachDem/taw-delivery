@@ -2,6 +2,8 @@
 
 ### TL;DR
 
+ TGVAIRWABO : agence de transport et de livraison international de colis entre l'europe et le Cameroun.  
+
 Ce premier milestone vise à poser toute l’architecture logicielle et organisationnelle pour orchestrer le flow de proposition de livraison : depuis la saisie de commande en agence, jusqu’à la décision du client (acceptation ou refus) après réception d’un message contenant un lien personnalisé. Les fonctionnalités incluent la mise en place des entités, des interfaces principales, du système de génération de liens, et du flux transactionnel pour informer le client, recueillir sa réponse et gérer la suite (créneau de livraison, retrait agence, paiement à la livraison). Le public cible inclut : agents d’agence, destinataires/clients, livreurs, et administrateurs d’agence.
 
 ---
