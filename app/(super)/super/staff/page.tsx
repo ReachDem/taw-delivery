@@ -38,6 +38,7 @@ import { getStaffMembers, getPendingInvitations, getAgencies, inviteStaffMember,
 interface Member {
     id: string;
     role: string;
+    createdAt: string;
     user: {
         id: string;
         name: string;
