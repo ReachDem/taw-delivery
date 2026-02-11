@@ -107,7 +107,7 @@ export async function inviteStaffMember(data: {
             // Add Super Admin as owner of the org so they can invite
             await prisma.member.create({
                 data: {
-                    id: crypto.randomUUID(),
+                    id: generateId(),
                     userId: session.user.id,
                     organizationId: data.organizationId,
                     role: "owner",
