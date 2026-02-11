@@ -36,7 +36,7 @@ import { toast } from "sonner";
 import { authClient, useSession } from "@/lib/auth-client";
 
 export default function AdminStaffPage() {
-    const { data: session } = useSession();
+    useSession();
     const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
