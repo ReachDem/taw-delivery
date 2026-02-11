@@ -97,9 +97,9 @@ export function getHomeByRole(role?: string): string {
         case "ADMIN":
             return "/admin/dashboard";
         case "AGENT":
-            return "/admin/dashboard"; // Future: "/dashboard"
+            return "/dashboard";
         case "DRIVER":
-            return "/admin/dashboard"; // Future: "/dlv"
+            return "/dlv/dashboard"; // Future: "
         default:
             return "/admin/login";
     }
