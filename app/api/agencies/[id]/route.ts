@@ -76,7 +76,7 @@ export async function GET(request: Request, { params }: RouteParams) {
             },
         });
         if (!membership) {
-            return forbiddenError();
+            return notFoundError("Agence");
         }
     }
 
