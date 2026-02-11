@@ -51,6 +51,9 @@ export async function GET(
             select: { id: true },
         });
 
+        console.log(`[API] Checking invitation ${id} for email ${invitation.email}`);
+        console.log(`[API] User exists?`, !!existingUser);
+
         return NextResponse.json({
             id: invitation.id,
             email: invitation.email,

@@ -34,50 +34,16 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { getStaffMembers, getPendingInvitations, getAgencies, inviteStaffMember, revokeInvitation } from "@/app/actions/staff";
-
-interface Member {
-    id: string;
-    role: string;
-    createdAt: string;
-    user: {
-        id: string;
-        name: string;
-        email: string;
-        role: string;
-    };
-    organization: {
-        id: string;
-        name: string;
-    };
-}
-
-interface Invitation {
-    id: string;
-    createdAt: string;
-    expiresAt: string;
-    email: string;
-    role: string;
-    status: string;
-    organization: {
-        id: string;
-        name: string;
-    };
-}
-
-interface Agency {
-    id: string;
-    name: string;
-    organizationId: string | null;
-}
+import type { SerializedMember, SerializedInvitation, SerializedAgency } from "@/lib/types/staff";
 
 export default function StaffPage() {
     const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const [members, setMembers] = useState<Member[]>([]);
-    const [invitations, setInvitations] = useState<Invitation[]>([]);
-    const [agencies, setAgencies] = useState<Agency[]>([]);
+    const [members, setMembers] = useState<SerializedMember[]>([]);
+    const [invitations, setInvitations] = useState<SerializedInvitation[]>([]);
+    const [agencies, setAgencies] = useState<SerializedAgency[]>([]);
 
     // Form data
     const [email, setEmail] = useState("");
@@ -93,8 +59,7 @@ export default function StaffPage() {
                 getAgencies()
             ]);
 
-            // Combine members and super admins for display?
-            // For now just show organization members
+            // Data is already serialized by server actions
             setMembers(membersData.members);
             setInvitations(invitationsData);
             setAgencies(agenciesData);

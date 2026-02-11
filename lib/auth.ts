@@ -23,7 +23,11 @@ export const auth = betterAuth({
             // admin: Full control except deleting org or changing owner
             // member: Read-only access
             async sendInvitationEmail(data) {
-                const inviteLink = `${process.env.NEXT_PUBLIC_APP_URL}/admin/accept-invitation/${data.id}`;
+                // Use different invitation links based on the role
+                // Admins accept at /admin/accept-invitation, members (agents) at /accept-invitation (route group (agent))
+                const isAdmin = data.role === "admin";
+                const basePath = isAdmin ? "/admin" : "";
+                const inviteLink = `${process.env.NEXT_PUBLIC_APP_URL}${basePath}/accept-invitation/${data.id}`;
 
                 const emailHtml = generateAdminInvitationEmail({
                     inviteeName: data.email,

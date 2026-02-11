@@ -15,7 +15,7 @@ export interface AdminInvitationEmailData {
  * Generate HTML email for admin invitation
  */
 export function generateAdminInvitationEmail(data: AdminInvitationEmailData): string {
-    const roleText = data.role === 'SUPER_ADMIN' ? 'Super Administrateur' : 'Administrateur';
+    const roleText = data.role === 'SUPER_ADMIN' ? 'Super Administrateur' : data.role === 'admin' ? 'Livreur' : 'Agent';
     const agencyText = data.agencyName ? ` de l'agence <strong>${data.agencyName}</strong>` : '';
 
     return `
@@ -116,7 +116,7 @@ export function generateAdminInvitationEmail(data: AdminInvitationEmailData): st
  * Generate plain text version of admin invitation email
  */
 export function generateAdminInvitationTextEmail(data: AdminInvitationEmailData): string {
-    const roleText = data.role === 'SUPER_ADMIN' ? 'Super Administrateur' : 'Administrateur';
+    const roleText = data.role === 'SUPER_ADMIN' ? 'Super Administrateur' : data.role === 'admin' ? 'Livreur' : 'Agent';
     const agencyText = data.agencyName ? ` de l'agence ${data.agencyName}` : '';
 
     return `
