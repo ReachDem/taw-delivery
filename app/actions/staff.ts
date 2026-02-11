@@ -2,6 +2,7 @@
 
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
+import { generateId } from "better-auth";
 import { headers } from "next/headers";
 
 export async function getStaffMembers() {
