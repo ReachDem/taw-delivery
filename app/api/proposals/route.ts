@@ -8,6 +8,7 @@ import {
 } from "@/lib/api-helpers";
 import { requireAuth } from "@/lib/auth-middleware";
 import { generateUniqueCode } from "@/lib/code-generator";
+import { getProposalUrl } from "@/lib/url";
 
 // ============================================
 // Validation Schemas
@@ -120,8 +121,8 @@ export async function POST(request: Request) {
         }),
     ]);
 
-    // Generate the proposal link (external link to be created by user)
-    const proposalLink = `${process.env.BETTER_AUTH_URL || "http://localhost:3000"}/p/${code}`;
+    // Generate the proposal link
+    const proposalLink = getProposalUrl(code);
 
     return apiResponse(
         {

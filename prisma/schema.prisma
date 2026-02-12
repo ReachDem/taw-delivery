@@ -257,7 +257,8 @@ model Order {
 model DeliveryProposal {
   id              String         @id @default(uuid())
   orderId         String         @unique
-  code            String         @unique @db.VarChar(4) // 4-char alphanumeric code (e.g., AB12)
+  code            String         @unique @db.VarChar(5) // 5-char alphanumeric code (e.g., AB1C2)
+  shortUrl        String?        // Short URL from rcdm.ink
   expiresAt       DateTime
   decision        Decision       @default(PENDING)
   decidedAt       DateTime?
@@ -266,6 +267,7 @@ model DeliveryProposal {
   longitude       Decimal?       @db.Decimal(11, 8)
   paymentChoice   PaymentChoice?
   createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
 
   order   Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
   booking Booking?

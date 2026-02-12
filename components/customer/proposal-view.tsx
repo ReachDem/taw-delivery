@@ -89,7 +89,7 @@ export function ProposalView({ initialProposal }: ProposalViewProps) {
                         Votre Livraison
                     </h1>
                     <p className="text-zinc-600 dark:text-zinc-400">
-                        {proposal.order.agency.name}
+                        {proposal.order.agency?.name || "TGVAIRWABO"}
                     </p>
                 </div>
 

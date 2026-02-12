@@ -4,19 +4,19 @@ import prisma from "@/lib/prisma";
 const CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
 /**
- * Generate a random 8-character alphanumeric code for better security
- * (increased from 4 to prevent brute force attacks)
+ * Generate a random 5-character alphanumeric code
+ * Optimized for SMS shortening while maintaining uniqueness
  */
 function generateRandomCode(): string {
     let code = "";
-    for (let i = 0; i < 8; i++) {
+    for (let i = 0; i < 5; i++) {
         code += CHARS.charAt(Math.floor(Math.random() * CHARS.length));
     }
     return code;
 }
 
 /**
- * Generate a unique 8-character code for delivery proposals
+ * Generate a unique 5-character code for delivery proposals
  * Checks database for uniqueness and retries if collision
  */
 export async function generateUniqueCode(maxRetries = 10): Promise<string> {
