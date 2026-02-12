@@ -76,69 +76,31 @@ export function ProposalForm({
     setStep("sending");
 
     try {
-      // 1. Create or get client
-      const clientRes = await fetch("/api/clients", {
+      // Single atomic endpoint: creates client, order, proposal + sends SMS
+      const response = await fetch("/api/proposals/create-and-send", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          firstName: data.clientName.split(" ")[0],
-          lastName: data.clientName.split(" ").slice(1).join(" ") || "",
+          clientName: data.clientName,
           phone: data.phone,
           email: data.email || undefined,
-        }),
-      });
-
-      if (!clientRes.ok) {
-        const error = await clientRes.json();
-        throw new Error(error.message || "Erreur lors de la création du client");
-      }
-
-      const { data: client } = await clientRes.json();
-
-      // 2. Create order
-      const orderRes = await fetch("/api/orders", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          clientId: client.id,
-          productDescription: data.contents,
-          amount: data.amount ? parseFloat(data.amount) : 0,
-          specialInstructions: data.refId ? `REF: ${data.refId}` : undefined,
-        }),
-      });
-
-      if (!orderRes.ok) {
-        const error = await orderRes.json();
-        throw new Error(error.message || "Erreur lors de la création de la commande");
-      }
-
-      const { data: order } = await orderRes.json();
-
-      // 3. Create proposal
-      const proposalRes = await fetch("/api/proposals", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          orderId: order.id,
+          refId: data.refId || undefined,
+          contents: data.contents,
+          amount: data.amount || undefined,
           expiresInHours: 48,
         }),
       });
 
-      if (!proposalRes.ok) {
-        const error = await proposalRes.json();
-        throw new Error(error.message || "Erreur lors de la création de la proposition");
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message || "Erreur lors de la création de la proposition");
       }
 
-      const { data: proposal } = await proposalRes.json();
+      const { proposal, sms } = result.data;
 
-      // 4. Send SMS with short link
-      const sendRes = await fetch(`/api/proposals/${proposal.id}/send`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-      });
-
-      if (!sendRes.ok) {
-        // Proposal created but SMS failed - still show success with warning
+      // Check SMS status
+      if (sms.status === "failed") {
         toast.warning(
           `Proposition ${proposal.code} créée mais l'envoi SMS a échoué. Veuillez réessayer.`
         );

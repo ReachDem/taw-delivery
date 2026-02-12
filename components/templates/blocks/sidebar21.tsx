@@ -310,11 +310,6 @@ const NavUser = ({ user }: { user: UserData }) => {
 const AppSidebar = ({ ...props }: React.ComponentProps<typeof Sidebar>) => {
   const [activeItem, setActiveItem] = React.useState<NavItem | null>(null);
 
-  // Get all items with children for drill-down
-  const drillableItems = sidebarData.navGroups.flatMap((group) =>
-    group.items.filter((item) => item.children && item.children.length > 0),
-  );
-
   const handleItemClick = (item: NavItem) => {
     if (item.children && item.children.length > 0) {
       setActiveItem(item);
