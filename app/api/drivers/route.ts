@@ -89,6 +89,9 @@ export async function POST(request: Request) {
 
     // Security check: ensure admin belongs to the agency
     if (session.user.role !== "SUPER_ADMIN") {
+        if (!agency.organizationId) {
+            return apiError("Agence invalide", 400);
+        }
         const adminMember = await prisma.member.findFirst({
             where: { userId: session.user.id, organizationId: agency.organizationId },
         });
