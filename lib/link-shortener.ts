@@ -56,12 +56,12 @@ export async function createShortLink(
         throw new Error(`Erreur création lien court: ${response.status}`);
     }
 
-    const data = await response.json();
+    const data: CreateLinkResponse = await response.json();
     
     return {
-        slug: code.toLowerCase(),
-        url: proposalUrl,
-        shortUrl: `${RCDM_INK_API_URL}/${code.toLowerCase()}`,
+        slug: data.slug,
+        url: data.url,
+        shortUrl: data.shortUrl,
     };
 }
 

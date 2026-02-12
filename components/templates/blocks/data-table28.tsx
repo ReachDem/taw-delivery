@@ -218,7 +218,7 @@ export function useDataTable<TData>(options: UseDataTableOptions<TData>) {
     rowHeight = DEFAULT_ROW_HEIGHT,
     overscan = DEFAULT_OVERSCAN,
     onLoadingChange,
-    onErrorChange,
+    onErrorChange: _onErrorChange,
   } = options;
 
   const [sorting, setSorting] = React.useState<SortingState>(initialSorting);
@@ -579,7 +579,7 @@ export function useDataTable<TData>(options: UseDataTableOptions<TData>) {
       }
 
       const next = navigateCell(direction);
-      if (!next) return;
+
 
       event.preventDefault();
       focusCell(next.rowIndex, next.columnId);
