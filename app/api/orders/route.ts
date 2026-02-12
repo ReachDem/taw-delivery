@@ -39,10 +39,15 @@ export async function GET(request: Request) {
 
     // Handle comma-separated status values (e.g., "SCHEDULED,IN_DELIVERY")
     if (status) {
-        const statusValues = status.split(",").map(s => s.trim()) as OrderStatus[];
+        const allowedStatuses = new Set<string>(Object.values(OrderStatus));
+        const statusValues = status
+            .split(",")
+            .map((s) => s.trim())
+            .filter((s): s is OrderStatus => s.length > 0 && allowedStatuses.has(s));
+
         if (statusValues.length === 1) {
             where.status = statusValues[0];
-        } else {
+        } else if (statusValues.length > 1) {
             where.status = { in: statusValues };
         }
     }

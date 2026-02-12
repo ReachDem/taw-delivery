@@ -68,9 +68,8 @@ export default function SettingsPage() {
       try {
         const { data: org } = await authClient.organization.getFullOrganization();
         setOrganization(org);
-      } catch (error) {
         console.error("Error fetching organization:", error);
-      } finally {
+        toast.error("Erreur lors du chargement de l'agence.");
         setIsLoading(false);
       }
     };

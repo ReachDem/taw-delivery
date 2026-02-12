@@ -37,6 +37,19 @@ export async function POST(
             return apiError("Proposition non trouvée", 404);
         }
 
+        // Authorization: ensure the caller can act on this proposal's order
+        const user = session?.user as { role?: string; agencyId?: string } | undefined;
+
+        if (user?.role !== "SUPER_ADMIN") {
+            // Try to derive the agency ID from the order or its agency relation
+            const proposalAgencyId =
+                (proposal.order as any)?.agencyId ??
+                (proposal.order.agency as any)?.id;
+
+            if (!proposalAgencyId || proposalAgencyId !== user?.agencyId) {
+                return apiError("Accès non autorisé à cette proposition", 403);
+            }
+        }
         if (!proposal.order.client.phone) {
             return apiError("Le client n'a pas de numéro de téléphone", 400);
         }
