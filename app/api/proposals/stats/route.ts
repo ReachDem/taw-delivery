@@ -8,7 +8,7 @@ import { requireAuth } from "@/lib/auth-middleware";
 // ============================================
 
 export async function GET() {
-    const [session, authError] = await requireAuth();
+    const [, authError] = await requireAuth();
     if (authError) return authError;
 
     try {
