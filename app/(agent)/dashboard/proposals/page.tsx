@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useSession } from "@/lib/auth-client";
 import {
   Card,
@@ -92,7 +91,6 @@ interface Proposal {
 }
 
 export default function ProposalsPage() {
-  const router = useRouter();
   const { data: session, isPending } = useSession();
   const [proposals, setProposals] = useState<Proposal[]>([]);
   const [isLoading, setIsLoading] = useState(true);
