@@ -147,7 +147,7 @@ export default function ProposalDetailPage({
   };
 
   const copyLink = () => {
-    const link = proposal?.shortUrl || getProposalUrl(code);
+    const link = proposal?.shortUrl || `${window.location.origin}/p/${code}`;
     navigator.clipboard.writeText(link);
     setCopied(true);
     toast.success("Lien copié!");
