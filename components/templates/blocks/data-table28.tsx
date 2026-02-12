@@ -578,8 +578,6 @@ export function useDataTable<TData>(options: UseDataTableOptions<TData>) {
           return;
       }
 
-      if (!direction) return;
-
       const next = navigateCell(direction);
       if (!next) return;
 
