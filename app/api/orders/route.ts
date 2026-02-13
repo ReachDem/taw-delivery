@@ -15,9 +15,9 @@ import { requireAuth } from "@/lib/auth-middleware";
 
 const createOrderSchema = z.object({
     clientId: z.string().uuid("ID client invalide"),
-    agencyId: z.string().uuid("ID agence invalide"),
+    agencyId: z.string().uuid("ID agence invalide").optional(),
     productDescription: z.string().min(3, "La description doit contenir au moins 3 caractères"),
-    amount: z.number().positive("Le montant doit être positif"),
+    amount: z.number().nonnegative("Le montant doit être positif ou zéro"),
     specialInstructions: z.string().optional().nullable(),
 });
 
@@ -34,9 +34,23 @@ export async function GET(request: Request) {
 
     // Build where clause - filter by user's agency unless SUPER_ADMIN
     const where: any = {
-        ...(status && { status: status as OrderStatus }),
         ...(clientId && { clientId }),
     };
+
+    // Handle comma-separated status values (e.g., "SCHEDULED,IN_DELIVERY")
+    if (status) {
+        const allowedStatuses = new Set<string>(Object.values(OrderStatus));
+        const statusValues = status
+            .split(",")
+            .map((s) => s.trim())
+            .filter((s): s is OrderStatus => s.length > 0 && allowedStatuses.has(s));
+
+        if (statusValues.length === 1) {
+            where.status = statusValues[0];
+        } else if (statusValues.length > 1) {
+            where.status = { in: statusValues };
+        }
+    }
 
     // Super Admins can see all orders
     if (session.user.role !== "SUPER_ADMIN") {
@@ -109,33 +123,28 @@ export async function POST(request: Request) {
         return apiError("Client non trouvé", 404);
     }
 
-    // Verify agency exists
-    const agency = await prisma.agency.findUnique({
-        where: { id: data.agencyId },
-    });
-
-    if (!agency) {
-        return apiError("Agence non trouvée", 404);
-    }
-
     // Get the agent associated with the current user
     const agent = await prisma.agent.findUnique({
         where: { userId: session.user.id },
+        include: { agency: true },
     });
 
     if (!agent) {
         return apiError("Vous devez être un agent pour créer une commande", 403);
     }
 
-    // Verify agent belongs to the agency
-    if (agent.agencyId !== data.agencyId) {
+    // Use provided agencyId or default to agent's agency
+    const agencyId = data.agencyId || agent.agencyId;
+
+    // Verify agent belongs to the agency if agencyId was provided
+    if (data.agencyId && agent.agencyId !== data.agencyId) {
         return apiError("Vous ne pouvez créer des commandes que pour votre agence", 403);
     }
 
     const order = await prisma.order.create({
         data: {
             clientId: data.clientId,
-            agencyId: data.agencyId,
+            agencyId: agencyId,
             agentId: agent.id,
             productDescription: data.productDescription,
             amount: data.amount,

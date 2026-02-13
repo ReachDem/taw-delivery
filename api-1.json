@@ -1,0 +1,830 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Sink API",
+    "description": "A Simple / Speedy / Secure Link Shortener with Analytics, 100% run on Cloudflare."
+  },
+  "servers": [
+    {
+      "url": "https://rcdm.ink",
+      "description": "Local Development Server",
+      "variables": {}
+    }
+  ],
+  "paths": {
+    "": {
+      "get": {
+        "tags": [
+          "App Routes"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/link/ai": {
+      "get": {
+        "tags": [
+          "API Routes"
+        ],
+        "parameters": [
+          {
+            "name": "url",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uri"
+            },
+            "description": "The URL to generate a slug for"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "Generate a slug using AI based on the URL",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/link/create": {
+      "post": {
+        "tags": [
+          "API Routes"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "Create a new short link",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "url"
+                ],
+                "properties": {
+                  "url": {
+                    "type": "string",
+                    "description": "The target URL"
+                  },
+                  "slug": {
+                    "type": "string",
+                    "description": "Custom slug (auto-generated if not provided)"
+                  },
+                  "comment": {
+                    "type": "string",
+                    "description": "Optional comment"
+                  },
+                  "expiration": {
+                    "type": "integer",
+                    "description": "Expiration timestamp (unix seconds)"
+                  },
+                  "title": {
+                    "type": "string",
+                    "description": "Custom title for link preview"
+                  },
+                  "description": {
+                    "type": "string",
+                    "description": "Custom description for link preview"
+                  },
+                  "image": {
+                    "type": "string",
+                    "description": "Custom image for link preview"
+                  },
+                  "apple": {
+                    "type": "string",
+                    "description": "Apple App Store redirect URL"
+                  },
+                  "google": {
+                    "type": "string",
+                    "description": "Google Play Store redirect URL"
+                  },
+                  "cloaking": {
+                    "type": "boolean",
+                    "description": "Enable link cloaking (mask destination URL)"
+                  },
+                  "redirectWithQuery": {
+                    "type": "boolean",
+                    "description": "Append query parameters to destination URL"
+                  },
+                  "password": {
+                    "type": "string",
+                    "description": "Password protection for the link"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/link/delete": {
+      "post": {
+        "tags": [
+          "API Routes"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "Delete a short link",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "slug"
+                ],
+                "properties": {
+                  "slug": {
+                    "type": "string",
+                    "description": "The slug of the link to delete"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/link/edit": {
+      "put": {
+        "tags": [
+          "API Routes"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "Edit an existing short link",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "url",
+                  "slug"
+                ],
+                "properties": {
+                  "url": {
+                    "type": "string",
+                    "description": "The target URL"
+                  },
+                  "slug": {
+                    "type": "string",
+                    "description": "The slug of the link to edit"
+                  },
+                  "comment": {
+                    "type": "string",
+                    "description": "Optional comment"
+                  },
+                  "expiration": {
+                    "type": "integer",
+                    "description": "Expiration timestamp (unix seconds)"
+                  },
+                  "title": {
+                    "type": "string",
+                    "description": "Custom title for link preview"
+                  },
+                  "description": {
+                    "type": "string",
+                    "description": "Custom description for link preview"
+                  },
+                  "image": {
+                    "type": "string",
+                    "description": "Custom image for link preview"
+                  },
+                  "apple": {
+                    "type": "string",
+                    "description": "Apple App Store redirect URL"
+                  },
+                  "google": {
+                    "type": "string",
+                    "description": "Google Play Store redirect URL"
+                  },
+                  "cloaking": {
+                    "type": "boolean",
+                    "description": "Enable link cloaking (mask destination URL)"
+                  },
+                  "redirectWithQuery": {
+                    "type": "boolean",
+                    "description": "Append query parameters to destination URL"
+                  },
+                  "password": {
+                    "type": "string",
+                    "description": "Password protection for the link"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/link/export": {
+      "get": {
+        "tags": [
+          "API Routes"
+        ],
+        "parameters": [
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Pagination cursor from previous response"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "Export all links with pagination",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/link/import": {
+      "post": {
+        "tags": [
+          "API Routes"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "Import links from exported data",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "version",
+                  "links"
+                ],
+                "properties": {
+                  "version": {
+                    "type": "string",
+                    "description": "Export format version"
+                  },
+                  "exportedAt": {
+                    "type": "string",
+                    "description": "Export timestamp (ISO 8601)"
+                  },
+                  "count": {
+                    "type": "integer",
+                    "description": "Number of links in export"
+                  },
+                  "links": {
+                    "type": "array",
+                    "description": "Array of links to import",
+                    "items": {
+                      "type": "object",
+                      "required": [
+                        "url",
+                        "slug"
+                      ],
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "description": "Link ID (auto-generated if not provided)"
+                        },
+                        "url": {
+                          "type": "string",
+                          "description": "The target URL"
+                        },
+                        "slug": {
+                          "type": "string",
+                          "description": "The slug for the short link"
+                        },
+                        "comment": {
+                          "type": "string",
+                          "description": "Optional comment"
+                        },
+                        "createdAt": {
+                          "type": "integer",
+                          "description": "Creation timestamp (unix seconds)"
+                        },
+                        "updatedAt": {
+                          "type": "integer",
+                          "description": "Last update timestamp (unix seconds)"
+                        },
+                        "expiration": {
+                          "type": "integer",
+                          "description": "Expiration timestamp (unix seconds)"
+                        },
+                        "title": {
+                          "type": "string",
+                          "description": "Custom title for link preview"
+                        },
+                        "description": {
+                          "type": "string",
+                          "description": "Custom description for link preview"
+                        },
+                        "image": {
+                          "type": "string",
+                          "description": "Custom image for link preview"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/link/list": {
+      "get": {
+        "tags": [
+          "API Routes"
+        ],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 20,
+              "maximum": 1024
+            },
+            "description": "Maximum number of links to return"
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Pagination cursor from previous response"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "List all short links with pagination",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/link/query": {
+      "get": {
+        "tags": [
+          "API Routes"
+        ],
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The slug of the link to query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "Query a short link by slug",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/link/search": {
+      "get": {
+        "tags": [
+          "API Routes"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "Search all links (returns slug, url, comment for each link)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/link/upsert": {
+      "post": {
+        "tags": [
+          "API Routes"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "Create or update a short link (upsert)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "url"
+                ],
+                "properties": {
+                  "url": {
+                    "type": "string",
+                    "description": "The target URL"
+                  },
+                  "slug": {
+                    "type": "string",
+                    "description": "Custom slug (auto-generated if not provided)"
+                  },
+                  "comment": {
+                    "type": "string",
+                    "description": "Optional comment"
+                  },
+                  "expiration": {
+                    "type": "integer",
+                    "description": "Expiration timestamp (unix seconds)"
+                  },
+                  "title": {
+                    "type": "string",
+                    "description": "Custom title for link preview"
+                  },
+                  "description": {
+                    "type": "string",
+                    "description": "Custom description for link preview"
+                  },
+                  "image": {
+                    "type": "string",
+                    "description": "Custom image for link preview"
+                  },
+                  "apple": {
+                    "type": "string",
+                    "description": "Apple App Store redirect URL"
+                  },
+                  "google": {
+                    "type": "string",
+                    "description": "Google Play Store redirect URL"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/location": {
+      "get": {
+        "tags": [
+          "API Routes"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "The location of the user"
+          }
+        },
+        "description": "Get the location of the user"
+      }
+    },
+    "/api/logs/events": {
+      "get": {
+        "tags": [
+          "API Routes"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/logs/locations": {
+      "get": {
+        "tags": [
+          "API Routes"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/stats/counters": {
+      "get": {
+        "tags": [
+          "API Routes"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/stats/heatmap": {
+      "get": {
+        "tags": [
+          "API Routes"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/stats/metrics": {
+      "get": {
+        "tags": [
+          "API Routes"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/stats/views": {
+      "get": {
+        "tags": [
+          "API Routes"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/upload/image": {
+      "post": {
+        "tags": [
+          "API Routes"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "Upload an image to R2 storage",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "file",
+                  "slug"
+                ],
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  },
+                  "slug": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/verify": {
+      "get": {
+        "tags": [
+          "API Routes"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "The site token is valid"
+          },
+          "default": {
+            "description": "The site token is invalid"
+          }
+        },
+        "description": "Verify the site token"
+      }
+    },
+    "/_assets/{key}": {
+      "get": {
+        "tags": [
+          "Internal"
+        ],
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/__nuxt_error": {
+      "get": {
+        "tags": [
+          "Internal"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/__nuxt_island/{*param1}": {
+      "get": {
+        "tags": [
+          "Internal"
+        ],
+        "parameters": [
+          {
+            "name": "*param1",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/_i18n/{hash}/{locale}/messages.json": {
+      "get": {
+        "tags": [
+          "Internal"
+        ],
+        "parameters": [
+          {
+            "name": "hash",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "locale",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/_docs/openapi.json": {
+      "get": {
+        "tags": [
+          "Internal"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/_docs/scalar": {
+      "get": {
+        "tags": [
+          "Internal"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/_docs/swagger": {
+      "get": {
+        "tags": [
+          "Internal"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Use NUXT_SITE_TOKEN as the bearer token"
+      }
+    }
+  }
+}

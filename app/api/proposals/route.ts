@@ -1,6 +1,7 @@
 import { z } from "zod";
 import prisma from "@/lib/prisma";
-import { OrderStatus } from "@/lib/generated/prisma/client";
+import { Decision, OrderStatus } from "@/lib/generated/prisma/client";
+import type { Prisma } from "@/lib/generated/prisma/client";
 import {
     apiResponse,
     apiError,
@@ -8,6 +9,7 @@ import {
 } from "@/lib/api-helpers";
 import { requireAuth } from "@/lib/auth-middleware";
 import { generateUniqueCode } from "@/lib/code-generator";
+import { getProposalUrl } from "@/lib/url";
 
 // ============================================
 // Validation Schemas
@@ -20,13 +22,54 @@ const createProposalSchema = z.object({
 
 // ============================================
 // GET /api/proposals - List all proposals
+// Supports server-side filtering by search and status
 // ============================================
 
-export async function GET() {
+export async function GET(request: Request) {
     const [session, authError] = await requireAuth();
     if (authError) return authError;
 
+    const { searchParams } = new URL(request.url);
+    const search = searchParams.get("search")?.trim() || "";
+    const status = searchParams.get("status")?.trim() || "all";
+
+    const where: Prisma.DeliveryProposalWhereInput = {};
+
+    if (status !== "all") {
+        if ((Object.values(Decision) as string[]).includes(status)) {
+            where.decision = status as Decision;
+        }
+    }
+
+    if (search) {
+        where.OR = [
+            { code: { contains: search, mode: "insensitive" } },
+            {
+                order: {
+                    client: {
+                        firstName: { contains: search, mode: "insensitive" },
+                    },
+                },
+            },
+            {
+                order: {
+                    client: {
+                        lastName: { contains: search, mode: "insensitive" },
+                    },
+                },
+            },
+            {
+                order: {
+                    client: {
+                        phone: { contains: search },
+                    },
+                },
+            },
+        ];
+    }
+
     const proposals = await prisma.deliveryProposal.findMany({
+        where,
         orderBy: { createdAt: "desc" },
         take: 50,
         include: {
@@ -120,8 +163,8 @@ export async function POST(request: Request) {
         }),
     ]);
 
-    // Generate the proposal link (external link to be created by user)
-    const proposalLink = `${process.env.BETTER_AUTH_URL || "http://localhost:3000"}/p/${code}`;
+    // Generate the proposal link
+    const proposalLink = getProposalUrl(code);
 
     return apiResponse(
         {
