@@ -43,8 +43,8 @@ export async function POST(
         if (user?.role !== "SUPER_ADMIN") {
             // Try to derive the agency ID from the order or its agency relation
             const proposalAgencyId =
-                (proposal.order as any)?.agencyId ??
-                (proposal.order.agency as any)?.id;
+                proposal.order?.agencyId ??
+                proposal.order?.agency?.id ?? null;
 
             if (!proposalAgencyId || proposalAgencyId !== user?.agencyId) {
                 return apiError("Accès non autorisé à cette proposition", 403);
