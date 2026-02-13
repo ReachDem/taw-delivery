@@ -97,11 +97,18 @@ export default function OrdersPage() {
   const [statusFilter, setStatusFilter] = useState<string>("all");
 
   const fetchOrders = async () => {
+    setIsLoading(true);
     try {
-      const res = await fetch("/api/orders");
+      const params = new URLSearchParams();
+      if (statusFilter !== "all") {
+        params.set("status", statusFilter);
+      }
+      const res = await fetch(`/api/orders?${params.toString()}`);
       if (res.ok) {
         const data = await res.json();
         setOrders(data.data || []);
+      } else {
+        toast.error("Erreur lors du chargement des commandes");
       }
     } catch (error) {
       toast.error("Erreur lors du chargement des commandes");
@@ -115,7 +122,7 @@ export default function OrdersPage() {
     if (!isPending && session?.user) {
       fetchOrders();
     }
-  }, [isPending, session]);
+  }, [isPending, session, statusFilter]);
 
   const handleRefresh = () => {
     setIsRefreshing(true);

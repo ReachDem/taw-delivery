@@ -580,7 +580,9 @@ export function useDataTable<TData>(options: UseDataTableOptions<TData>) {
 
       const next = navigateCell(direction);
 
-
+      if (!next) {
+        return;
+      }
       event.preventDefault();
       focusCell(next.rowIndex, next.columnId);
 

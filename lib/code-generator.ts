@@ -1,4 +1,5 @@
 import prisma from "@/lib/prisma";
+import { randomInt } from "node:crypto";
 
 // Characters for code generation (uppercase letters + digits, excluding confusing ones like 0/O, 1/I)
 const CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -10,7 +11,7 @@ const CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 function generateRandomCode(): string {
     let code = "";
     for (let i = 0; i < 5; i++) {
-        code += CHARS.charAt(Math.floor(Math.random() * CHARS.length));
+        code += CHARS.charAt(randomInt(CHARS.length));
     }
     return code;
 }

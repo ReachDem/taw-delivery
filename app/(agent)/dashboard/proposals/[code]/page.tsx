@@ -42,6 +42,7 @@ import {
   Check,
 } from "lucide-react";
 import { toast } from "sonner";
+import { getProposalUrl } from "@/lib/url";
 
 interface ProposalDetail {
   id: string;
