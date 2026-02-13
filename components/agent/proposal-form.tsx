@@ -28,7 +28,7 @@ const proposalFormSchema = z.object({
   phone: z
     .string()
     .min(9, "Numéro de téléphone invalide")
-    .regex(/^[\d\s+()-]+$/, "Format de téléphone invalide"),
+    .regex(/^\+?(?:\d[\s\-()]?){8,14}\d$/, "Format de téléphone invalide"),
   email: z.string().email("Email invalide").optional().or(z.literal("")),
 
   // Shipment Details
