@@ -1,6 +1,7 @@
 import { z } from "zod";
 import prisma from "@/lib/prisma";
-import { OrderStatus } from "@/lib/generated/prisma/client";
+import { Decision, OrderStatus } from "@/lib/generated/prisma/client";
+import type { Prisma } from "@/lib/generated/prisma/client";
 import {
     apiResponse,
     apiError,
@@ -32,22 +33,12 @@ export async function GET(request: Request) {
     const search = searchParams.get("search")?.trim() || "";
     const status = searchParams.get("status")?.trim() || "all";
 
-    const where: {
-        decision?: string;
-        OR?: Array<{
-            code?: { contains: string; mode: "insensitive" };
-            order?: {
-                client?: {
-                    firstName?: { contains: string; mode: "insensitive" };
-                    lastName?: { contains: string; mode: "insensitive" };
-                    phone?: { contains: string };
-                };
-            };
-        }>;
-    } = {};
+    const where: Prisma.DeliveryProposalWhereInput = {};
 
     if (status !== "all") {
-        where.decision = status;
+        if ((Object.values(Decision) as string[]).includes(status)) {
+            where.decision = status as Decision;
+        }
     }
 
     if (search) {
