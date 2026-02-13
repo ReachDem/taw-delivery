@@ -163,9 +163,6 @@ export async function upsertShortLink(
         throw new Error(`Erreur création/mise à jour lien court: ${response.status}`);
     }
 
-    return {
-        slug: code.toLowerCase(),
-        url: proposalUrl,
-        shortUrl: `${RCDM_INK_API_URL}/${code.toLowerCase()}`,
-    };
+    const data: CreateLinkResponse = await response.json();
+    return data;
 }
