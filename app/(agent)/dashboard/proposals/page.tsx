@@ -101,11 +101,23 @@ export default function ProposalsPage() {
   const [sendingId, setSendingId] = useState<string | null>(null);
 
   const fetchProposals = async () => {
+    setIsLoading(true);
     try {
-      const res = await fetch("/api/proposals");
+      const params = new URLSearchParams();
+      if (statusFilter !== "all") {
+        params.set("status", statusFilter);
+      }
+      if (searchQuery.trim()) {
+        params.set("search", searchQuery.trim());
+      }
+
+      const query = params.toString();
+      const res = await fetch(`/api/proposals${query ? `?${query}` : ""}`);
       if (res.ok) {
         const data = await res.json();
         setProposals(data.data || []);
+      } else {
+        toast.error("Erreur lors du chargement des propositions");
       }
     } catch (error) {
       toast.error("Erreur lors du chargement des propositions");
@@ -119,7 +131,7 @@ export default function ProposalsPage() {
     if (!isPending && session?.user) {
       fetchProposals();
     }
-  }, [isPending, session]);
+  }, [isPending, session, searchQuery, statusFilter]);
 
   const handleRefresh = () => {
     setIsRefreshing(true);
@@ -187,21 +199,6 @@ export default function ProposalsPage() {
       minute: "2-digit",
     });
   };
-
-  // Filter proposals
-  const filteredProposals = proposals.filter((proposal) => {
-    const matchesSearch =
-      searchQuery === "" ||
-      proposal.code.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      proposal.order.client.firstName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      proposal.order.client.lastName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      proposal.order.client.phone.includes(searchQuery);
-
-    const matchesStatus =
-      statusFilter === "all" || proposal.decision === statusFilter;
-
-    return matchesSearch && matchesStatus;
-  });
 
   if (isPending || isLoading) {
     return (
@@ -301,7 +298,7 @@ export default function ProposalsPage() {
           </CardHeader>
 
           <CardContent>
-            {filteredProposals.length > 0 ? (
+            {proposals.length > 0 ? (
               <div className="rounded-md border">
                 <Table>
                   <TableHeader>
@@ -315,7 +312,7 @@ export default function ProposalsPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredProposals.map((proposal) => (
+                    {proposals.map((proposal) => (
                       <TableRow key={proposal.id}>
                         <TableCell>
                           <Link

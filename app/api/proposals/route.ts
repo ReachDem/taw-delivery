@@ -21,13 +21,64 @@ const createProposalSchema = z.object({
 
 // ============================================
 // GET /api/proposals - List all proposals
+// Supports server-side filtering by search and status
 // ============================================
 
-export async function GET() {
+export async function GET(request: Request) {
     const [session, authError] = await requireAuth();
     if (authError) return authError;
 
+    const { searchParams } = new URL(request.url);
+    const search = searchParams.get("search")?.trim() || "";
+    const status = searchParams.get("status")?.trim() || "all";
+
+    const where: {
+        decision?: string;
+        OR?: Array<{
+            code?: { contains: string; mode: "insensitive" };
+            order?: {
+                client?: {
+                    firstName?: { contains: string; mode: "insensitive" };
+                    lastName?: { contains: string; mode: "insensitive" };
+                    phone?: { contains: string };
+                };
+            };
+        }>;
+    } = {};
+
+    if (status !== "all") {
+        where.decision = status;
+    }
+
+    if (search) {
+        where.OR = [
+            { code: { contains: search, mode: "insensitive" } },
+            {
+                order: {
+                    client: {
+                        firstName: { contains: search, mode: "insensitive" },
+                    },
+                },
+            },
+            {
+                order: {
+                    client: {
+                        lastName: { contains: search, mode: "insensitive" },
+                    },
+                },
+            },
+            {
+                order: {
+                    client: {
+                        phone: { contains: search },
+                    },
+                },
+            },
+        ];
+    }
+
     const proposals = await prisma.deliveryProposal.findMany({
+        where,
         orderBy: { createdAt: "desc" },
         take: 50,
         include: {
