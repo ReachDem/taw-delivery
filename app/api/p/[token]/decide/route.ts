@@ -16,7 +16,9 @@ import {
 const decideSchema = z.object({
     decision: z.enum(["ACCEPTED", "REFUSED"]),
     // Required only if accepted
+    deliveryZoneId: z.string().uuid("ID zone invalide").optional(),
     deliveryAddress: z.string().min(5, "L'adresse doit contenir au moins 5 caractères").optional(),
+    addressDetails: z.string().optional(), // Indications supplémentaires
     latitude: z.number().optional(),
     longitude: z.number().optional(),
     paymentChoice: z.enum(["PAY_ON_DELIVERY", "ALREADY_PAID", "EXEMPT"]).optional(),
@@ -67,76 +69,94 @@ export async function POST(request: Request, { params }: RouteParams) {
     // Handle ACCEPTED
     if (data.decision === "ACCEPTED") {
         // Validate required fields for acceptance
-        if (!data.deliveryAddress) {
-            return apiError("L'adresse de livraison est requise pour accepter", 400);
+        // If location was not known by agent, client must select a zone
+        if (!proposal.order.locationKnown && !data.deliveryZoneId) {
+            return apiError("Veuillez sélectionner votre quartier de livraison", 400);
         }
         if (!data.paymentChoice) {
             return apiError("Le choix de paiement est requis pour accepter", 400);
         }
+        if (!data.slotId) {
+            return apiError("Veuillez sélectionner un créneau de livraison", 400);
+        }
 
-        // If slotId is provided, verify and book the slot
-        if (data.slotId) {
-            const slot = await prisma.timeSlot.findUnique({
-                where: { id: data.slotId },
+        // Calculate delivery fee if zone provided
+        let deliveryFee = proposal.order.deliveryFee;
+        let deliveryZoneId = proposal.order.deliveryZoneId;
+
+        if (data.deliveryZoneId) {
+            const zone = await prisma.deliveryZone.findUnique({
+                where: { id: data.deliveryZoneId },
             });
 
-            if (!slot) {
-                return notFoundError("Créneau");
+            if (!zone) {
+                return notFoundError("Zone de livraison");
             }
 
-            if (slot.isLocked || slot.currentBookings >= slot.maxCapacity) {
-                return apiError("Ce créneau n'est plus disponible", 409);
+            if (!zone.isActive) {
+                return apiError("Cette zone n'est plus disponible", 400);
             }
 
-            // Create booking and update proposal in transaction
-            await prisma.$transaction([
-                prisma.booking.create({
-                    data: {
-                        slotId: data.slotId,
-                        proposalId: proposal.id,
-                        position: slot.currentBookings + 1,
-                    },
-                }),
-                prisma.timeSlot.update({
-                    where: { id: data.slotId },
-                    data: { currentBookings: { increment: 1 } },
-                }),
-                prisma.deliveryProposal.update({
-                    where: { id: proposal.id },
-                    data: {
-                        decision: Decision.ACCEPTED,
-                        decidedAt: new Date(),
-                        deliveryAddress: data.deliveryAddress,
-                        latitude: data.latitude,
-                        longitude: data.longitude,
-                        paymentChoice: data.paymentChoice as PaymentChoice,
-                    },
-                }),
-                prisma.order.update({
-                    where: { id: proposal.orderId },
-                    data: { status: OrderStatus.SCHEDULED },
-                }),
-            ]);
-        } else {
-            // Accept without slot (will be scheduled later)
-            await prisma.$transaction([
-                prisma.deliveryProposal.update({
-                    where: { id: proposal.id },
-                    data: {
-                        decision: Decision.ACCEPTED,
-                        decidedAt: new Date(),
-                        deliveryAddress: data.deliveryAddress,
-                        latitude: data.latitude,
-                        longitude: data.longitude,
-                        paymentChoice: data.paymentChoice as PaymentChoice,
-                    },
-                }),
-                prisma.order.update({
-                    where: { id: proposal.orderId },
-                    data: { status: OrderStatus.ACCEPTED },
-                }),
-            ]);
+            deliveryFee = zone.baseFee;
+            deliveryZoneId = zone.id;
         }
+
+        // Calculate total amount
+        const productAmount = Number(proposal.order.productAmount);
+        const finalDeliveryFee = deliveryFee ? Number(deliveryFee) : 0;
+        const totalAmount = productAmount + finalDeliveryFee;
+
+        // Verify and book the slot
+        const slot = await prisma.timeSlot.findUnique({
+            where: { id: data.slotId },
+        });
+
+        if (!slot) {
+            return notFoundError("Créneau");
+        }
+
+        if (slot.isLocked || slot.currentBookings >= slot.maxCapacity) {
+            return apiError("Ce créneau n'est plus disponible", 409);
+        }
+
+        // Create booking and update everything in transaction
+        await prisma.$transaction([
+            prisma.booking.create({
+                data: {
+                    slotId: data.slotId,
+                    proposalId: proposal.id,
+                    position: slot.currentBookings + 1,
+                },
+            }),
+            prisma.timeSlot.update({
+                where: { id: data.slotId },
+                data: { currentBookings: { increment: 1 } },
+            }),
+            prisma.deliveryProposal.update({
+                where: { id: proposal.id },
+                data: {
+                    decision: Decision.ACCEPTED,
+                    decidedAt: new Date(),
+                    deliveryAddress: data.deliveryAddress || proposal.deliveryAddress,
+                    latitude: data.latitude,
+                    longitude: data.longitude,
+                    paymentChoice: data.paymentChoice as PaymentChoice,
+                },
+            }),
+            prisma.order.update({
+                where: { id: proposal.orderId },
+                data: {
+                    status: OrderStatus.SCHEDULED,
+                    deliveryZoneId,
+                    deliveryFee,
+                    amount: totalAmount,
+                    deliveryAddress: data.deliveryAddress,
+                    addressDetails: data.addressDetails,
+                    latitude: data.latitude,
+                    longitude: data.longitude,
+                },
+            }),
+        ]);
     } else {
         // Handle REFUSED
         await prisma.$transaction([
@@ -154,12 +174,22 @@ export async function POST(request: Request, { params }: RouteParams) {
         ]);
     }
 
-    // Fetch updated proposal
+    // Fetch updated proposal with full details
     const updatedProposal = await prisma.deliveryProposal.findUnique({
         where: { id: proposal.id },
         include: {
             order: {
-                select: { status: true },
+                select: {
+                    status: true,
+                    productAmount: true,
+                    deliveryFee: true,
+                    amount: true,
+                    deliveryAddress: true,
+                    addressDetails: true,
+                    deliveryZone: {
+                        select: { name: true, city: true },
+                    },
+                },
             },
             booking: {
                 include: {
@@ -174,6 +204,13 @@ export async function POST(request: Request, { params }: RouteParams) {
     return apiResponse({
         decision: updatedProposal?.decision,
         orderStatus: updatedProposal?.order.status,
+        pricing: {
+            productAmount: updatedProposal?.order.productAmount,
+            deliveryFee: updatedProposal?.order.deliveryFee,
+            totalAmount: updatedProposal?.order.amount,
+        },
+        deliveryZone: updatedProposal?.order.deliveryZone,
+        deliveryAddress: updatedProposal?.order.deliveryAddress,
         booking: updatedProposal?.booking
             ? {
                 slotDate: updatedProposal.booking.slot.slotDate,

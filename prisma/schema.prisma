@@ -46,6 +46,12 @@ enum PaymentChoice {
   EXEMPT
 }
 
+enum PaymentStatus {
+  PENDING
+  COLLECTED
+  NOT_APPLICABLE
+}
+
 enum MessageChannel {
   SMS
   EMAIL
@@ -172,11 +178,12 @@ model Agency {
   updatedAt      DateTime @updatedAt
   organizationId String?  @unique // Link to Better-Auth Organization
 
-  agents      Agent[]
-  drivers     Driver[]
-  orders      Order[]
-  timeSlots   TimeSlot[]
-  organization Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+  agents        Agent[]
+  drivers       Driver[]
+  orders        Order[]
+  timeSlots     TimeSlot[]
+  deliveryZones DeliveryZone[]
+  organization  Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
 
   @@map("agency")
 }
@@ -238,18 +245,36 @@ model Order {
   agencyId            String
   driverId            String?
   productDescription  String
-  amount              Decimal     @db.Decimal(10, 2)
+  
+  // Pricing breakdown
+  productAmount       Decimal     @default(0) @db.Decimal(10, 2)  // Montant du produit/colis
+  deliveryFee         Decimal?    @db.Decimal(10, 2)  // Frais de livraison (null si pas encore déterminé)
+  extraFee            Decimal?    @db.Decimal(10, 2)  // Frais supplémentaires (ajustement livreur)
+  amount              Decimal     @db.Decimal(10, 2)  // Total = productAmount + deliveryFee + extraFee (legacy, kept for compatibility)
+  
+  // Location
+  locationKnown       Boolean     @default(false)     // L'agent connaît-il la destination ?
+  deliveryZoneId      String?                         // Zone sélectionnée
+  deliveryAddress     String?                         // Adresse précise
+  addressDetails      String?                         // Indications supplémentaires (étage, code, repère)
+  latitude            Decimal?    @db.Decimal(10, 8)
+  longitude           Decimal?    @db.Decimal(11, 8)
+  
+  // Payment tracking
+  paymentStatus       PaymentStatus @default(PENDING)
+  
   status              OrderStatus @default(PENDING)
   specialInstructions String?
   createdAt           DateTime    @default(now())
   updatedAt           DateTime    @updatedAt
 
-  client   Client            @relation(fields: [clientId], references: [id])
-  agent    Agent             @relation(fields: [agentId], references: [id])
-  agency   Agency            @relation(fields: [agencyId], references: [id])
-  driver   Driver?           @relation(fields: [driverId], references: [id])
-  proposal DeliveryProposal?
-  messages MessageLog[]
+  client       Client            @relation(fields: [clientId], references: [id])
+  agent        Agent             @relation(fields: [agentId], references: [id])
+  agency       Agency            @relation(fields: [agencyId], references: [id])
+  driver       Driver?           @relation(fields: [driverId], references: [id])
+  deliveryZone DeliveryZone?     @relation(fields: [deliveryZoneId], references: [id])
+  proposal     DeliveryProposal?
+  messages     MessageLog[]
 
   @@map("order")
 }
@@ -335,6 +360,28 @@ model Organization {
 
   @@unique([slug])
   @@map("organization")
+}
+
+// ============================================
+// DELIVERY ZONES & PRICING
+// ============================================
+
+model DeliveryZone {
+  id        String   @id @default(uuid())
+  agencyId  String
+  name      String                          // Nom du quartier/zone
+  city      String                          // Ville (Douala, Yaoundé, etc.)
+  baseFee   Decimal  @db.Decimal(10, 2)     // Tarif fixe en FCFA
+  isActive  Boolean  @default(true)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  agency Agency  @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  orders Order[]
+
+  @@unique([agencyId, name])
+  @@map("delivery_zone")
 }
 
 model Member {

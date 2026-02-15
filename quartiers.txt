@@ -1,0 +1,158 @@
+--Douala 1 --
+Bali
+Bonamikengué
+Bessengué
+Bonamoudourou
+Bonabékombo
+Bonamouti-Akwa 2
+Bonadibong
+Bonamouti-Deido
+Bonadouma
+Bonanjo
+Bonadoumbè
+Bonapriso
+Bonajinjè
+Bonatéki
+Bonakouamouang
+Bonaténè
+Bonalembè
+Bonantonè
+Bonajang
+Hydrocarbures
+Bonelang
+Joss
+Bonalékè
+Koumassi
+Bonakeke Akwa
+Ngodi
+Grand Moulin
+Nkongmondo
+Nouvelle zone d'Akwa Nord
+Nouvelle zone de New-Deido
+
+-- Douala 2 --
+Aéroport
+Babylone I
+Babylone II
+Bonadouma
+Congo
+Kassalafam
+Lagos Market
+Lycée de New-Bell
+Mbam Ewondo
+Ndjong-Mebi
+Nkololoum
+Ngangue
+Prison
+Sabenjongo
+Source, T.S.F.
+Youpwé
+
+-- Douala 3 --
+Bilongue I
+Bilongue II
+Bonanloka
+Brazzaville
+Newtown aéroport
+Bwang
+Cité de la Paix
+Cité des Enseignants
+Dibom I
+Dibom II
+Japoma
+Logbaba
+Logbessou
+Madagascar
+Mbanga Mpongo
+RNCFC
+Ndogbatti CDP
+Ndoghem I
+Ndoghem II
+Ndogmbe
+Ndokoti
+Ndogbong
+CCC
+Ndogpassi I
+Ndogpassi II
+Logmayangui
+Cité des Billes
+Ari
+Mboko
+Nkôlmbong
+Ndodi
+Ngoma
+Nyalla
+Nylon
+Oyack
+P.K.8
+P.K.12
+P.K.14
+P.K.17
+P.K.19
+P.K.21
+P.K.J.6
+So-Boum
+Song-Mahop
+Tergal
+Yansoki
+Yassa
+Yatchika
+Yonyong
+Ngodi Bakoko
+
+-- Douala 4 --
+Bonendale 2
+Besseke
+Bilingue
+Bonamatoumbe Ville
+Bonambappé
+Bonaminkano
+Bonassama
+Grand Hangar
+Mambanda
+Ndobo
+Ngwele
+Nkomba
+Sodiko Ville.
+Bojongo
+Bonamatoumbe Village
+Bonendale I
+Bonendale II
+Djébalè I
+Djébalè II
+Sodiko Village
+
+-- Douala 5 --
+Bépanda Bonamoussongo
+Bépanda Bonéwanda
+Bépanda Omnisports
+Bépanda Petit Wouri
+Bépanda TSF Cacao Barry
+Bépanda TSF
+Bépanda Voirie
+Bépanda Yonyong
+Bonamoussadi 
+Cacao Barry
+Cite des Palmiers
+Cité Makepé
+Cité Sic
+Dikahe (PK10)
+Emene City
+Gentil
+Jourdain
+Kondi PK8
+Makèpè Maturité
+Makèpè Petit Pays
+Makèpè Recasement
+Makèpè Terminus
+Manikè
+Mbenguè City
+Nguereck
+PK 15
+PK 16
+PK 17
+PK 21
+Sobikago
+logpom
+logbessou
+Sodikombo

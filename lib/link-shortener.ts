@@ -56,12 +56,22 @@ export async function createShortLink(
         throw new Error(`Erreur création lien court: ${response.status}`);
     }
 
-    const data: CreateLinkResponse = await response.json();
+    const data = await response.json();
+    
+    // Handle API response structure (nested or flat)
+    const shortUrl = data.shortLink || data.shortUrl;
+    const slug = data.link?.slug || data.slug;
+    const url = data.link?.url || data.url;
+
+    if (!shortUrl) {
+        console.error("API response missing shortUrl:", data);
+        throw new Error("Réponse API invalide: URL courte manquante");
+    }
     
     return {
-        slug: data.slug,
-        url: data.url,
-        shortUrl: data.shortUrl,
+        slug,
+        url,
+        shortUrl,
     };
 }
 
@@ -163,6 +173,21 @@ export async function upsertShortLink(
         throw new Error(`Erreur création/mise à jour lien court: ${response.status}`);
     }
 
-    const data: CreateLinkResponse = await response.json();
-    return data;
+    const data = await response.json();
+    
+    // Handle API response structure (nested or flat)
+    const shortUrl = data.shortLink || data.shortUrl;
+    const slug = data.link?.slug || data.slug;
+    const url = data.link?.url || data.url;
+
+    if (!shortUrl) {
+        console.error("API response missing shortUrl:", data);
+        throw new Error("Réponse API invalide: URL courte manquante");
+    }
+
+    return {
+        slug,
+        url,
+        shortUrl,
+    };
 }

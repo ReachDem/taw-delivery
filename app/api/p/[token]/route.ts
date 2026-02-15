@@ -28,6 +28,9 @@ export async function GET(request: Request, { params }: RouteParams) {
                     agency: {
                         select: { name: true, address: true, city: true, phone: true },
                     },
+                    deliveryZone: {
+                        select: { id: true, name: true, city: true, baseFee: true },
+                    },
                 },
             },
             booking: {
@@ -65,10 +68,20 @@ export async function GET(request: Request, { params }: RouteParams) {
         paymentChoice: proposal.paymentChoice,
         order: {
             productDescription: proposal.order.productDescription,
-            amount: proposal.order.amount,
             status: proposal.order.status,
             client: proposal.order.client,
             agency: proposal.order.agency,
+            // Pricing breakdown
+            pricing: {
+                productAmount: proposal.order.productAmount,
+                deliveryFee: proposal.order.deliveryFee,
+                totalAmount: proposal.order.amount,
+            },
+            // Location info
+            locationKnown: proposal.order.locationKnown,
+            deliveryZone: proposal.order.deliveryZone,
+            deliveryAddress: proposal.order.deliveryAddress,
+            addressDetails: proposal.order.addressDetails,
         },
         booking: proposal.booking
             ? {
