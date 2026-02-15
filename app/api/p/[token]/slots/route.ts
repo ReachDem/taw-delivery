@@ -42,17 +42,19 @@ export async function GET(request: Request, { params }: RouteParams) {
     const agencyId = proposal.order.agencyId;
     const daysCount = parseInt(days);
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    // Slots start from TOMORROW — same-day slots are never available to customers
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(0, 0, 0, 0);
 
-    const endDate = new Date(today);
+    const endDate = new Date(tomorrow);
     endDate.setDate(endDate.getDate() + daysCount);
 
     // Check if slots exist for the period
     const existingCount = await prisma.timeSlot.count({
         where: {
             agencyId,
-            slotDate: { gte: today, lt: endDate },
+            slotDate: { gte: tomorrow, lt: endDate },
         },
     });
 
@@ -69,7 +71,7 @@ export async function GET(request: Request, { params }: RouteParams) {
             maxCapacity: number;
         }> = [];
 
-        const currentDate = new Date(today);
+        const currentDate = new Date(tomorrow);
         while (currentDate < endDate) {
             // Skip Sundays (day 0)
             if (currentDate.getDay() !== 0) {
@@ -98,7 +100,7 @@ export async function GET(request: Request, { params }: RouteParams) {
         where: {
             agencyId,
             slotDate: {
-                gte: today,
+                gte: tomorrow,
                 lt: endDate,
             },
             isLocked: false,
@@ -123,7 +125,7 @@ export async function GET(request: Request, { params }: RouteParams) {
             id: slot.id,
             date: slot.slotDate,
             hour: slot.slotHour,
-            hourLabel: `${slot.slotHour}h - ${slot.slotHour + 2}h`,
+            hourLabel: `${slot.slotHour}h - ${slot.slotHour + 1}h`,
             remainingCapacity: slot.maxCapacity - slot.currentBookings,
             isAlmostFull: (slot.maxCapacity - slot.currentBookings) <= 1,
         }));

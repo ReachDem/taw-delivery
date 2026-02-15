@@ -377,26 +377,61 @@ export function ProposalView({ initialProposal }: ProposalViewProps) {
                           {day.dateLabel}
                         </p>
                         <div className="grid grid-cols-2 gap-2">
-                          {day.slots.map((slot) => (
-                            <button
-                              key={slot.id}
-                              className={`rounded-lg border p-3 text-center transition hover:border-emerald-400 ${
-                                selectedSlotId === slot.id
-                                  ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20"
-                                  : "border-zinc-200 dark:border-zinc-700"
-                              }`}
-                              onClick={() => handleSlotSelected(slot.id)}
-                            >
-                              <p className="font-medium text-zinc-900 dark:text-zinc-100">
-                                {slot.hourLabel}
-                              </p>
-                              {slot.isAlmostFull && (
-                                <p className="text-xs text-orange-500 mt-1">
-                                  Presque plein
+                          {day.slots.map((slot) => {
+                            const maxCap = 4;
+                            const filled = maxCap - slot.remainingCapacity;
+                            const fillColor =
+                              slot.remainingCapacity <= 1
+                                ? "bg-red-500"
+                                : slot.remainingCapacity <= 2
+                                  ? "bg-yellow-500"
+                                  : "bg-emerald-500";
+                            const borderColor =
+                              selectedSlotId === slot.id
+                                ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20"
+                                : slot.remainingCapacity <= 1
+                                  ? "border-red-200 dark:border-red-800"
+                                  : "border-zinc-200 dark:border-zinc-700";
+
+                            return (
+                              <button
+                                key={slot.id}
+                                className={`rounded-lg border p-3 text-center transition hover:border-emerald-400 ${borderColor}`}
+                                onClick={() => handleSlotSelected(slot.id)}
+                              >
+                                <p className="font-medium text-zinc-900 dark:text-zinc-100">
+                                  {slot.hourLabel}
                                 </p>
-                              )}
-                            </button>
-                          ))}
+                                {/* Capacity dots: ● filled, ○ empty */}
+                                <div className="flex justify-center gap-1 mt-1.5">
+                                  {Array.from({ length: maxCap }).map(
+                                    (_, i) => (
+                                      <span
+                                        key={i}
+                                        className={`inline-block h-2 w-2 rounded-full ${
+                                          i < filled
+                                            ? fillColor
+                                            : "bg-zinc-200 dark:bg-zinc-600"
+                                        }`}
+                                      />
+                                    ),
+                                  )}
+                                </div>
+                                <p
+                                  className={`text-xs mt-1 ${
+                                    slot.remainingCapacity <= 1
+                                      ? "text-red-500 font-semibold"
+                                      : "text-zinc-400"
+                                  }`}
+                                >
+                                  {slot.remainingCapacity} place
+                                  {slot.remainingCapacity > 1 ? "s" : ""}{" "}
+                                  restante
+                                  {slot.remainingCapacity > 1 ? "s" : ""}
+                                </p>
+                              </button>
+                            );
+                          })}
                         </div>
                       </div>
                     ))}

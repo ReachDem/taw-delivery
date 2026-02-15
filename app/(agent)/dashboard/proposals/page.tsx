@@ -65,6 +65,8 @@ interface Proposal {
   shortUrl?: string;
   expiresAt: string;
   createdAt: string;
+  deliveryAddress?: string;
+  paymentChoice?: string;
   order: {
     id: string;
     orderNumber: string;
@@ -163,25 +165,37 @@ export default function ProposalsPage() {
     switch (status) {
       case "PENDING":
         return (
-          <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">
+          <Badge
+            variant="outline"
+            className="bg-yellow-50 text-yellow-700 border-yellow-200"
+          >
             En attente
           </Badge>
         );
       case "ACCEPTED":
         return (
-          <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200">
+          <Badge
+            variant="outline"
+            className="bg-emerald-50 text-emerald-700 border-emerald-200"
+          >
             Acceptée
           </Badge>
         );
       case "REFUSED":
         return (
-          <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">
+          <Badge
+            variant="outline"
+            className="bg-red-50 text-red-700 border-red-200"
+          >
             Refusée
           </Badge>
         );
       case "EXPIRED":
         return (
-          <Badge variant="outline" className="bg-gray-50 text-gray-700 border-gray-200">
+          <Badge
+            variant="outline"
+            className="bg-gray-50 text-gray-700 border-gray-200"
+          >
             Expirée
           </Badge>
         );
@@ -305,9 +319,19 @@ export default function ProposalsPage() {
                     <TableRow>
                       <TableHead>Code</TableHead>
                       <TableHead>Client</TableHead>
-                      <TableHead className="hidden md:table-cell">Téléphone</TableHead>
+                      <TableHead className="hidden md:table-cell">
+                        Téléphone
+                      </TableHead>
+                      <TableHead className="hidden md:table-cell">
+                        Montant
+                      </TableHead>
+                      <TableHead className="hidden lg:table-cell">
+                        Adresse
+                      </TableHead>
                       <TableHead>Statut</TableHead>
-                      <TableHead className="hidden lg:table-cell">Date d'envoi</TableHead>
+                      <TableHead className="hidden lg:table-cell">
+                        Date d'envoi
+                      </TableHead>
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -336,7 +360,28 @@ export default function ProposalsPage() {
                         <TableCell className="hidden md:table-cell">
                           {proposal.order.client.phone}
                         </TableCell>
-                        <TableCell>{getStatusBadge(proposal.decision)}</TableCell>
+                        <TableCell className="hidden md:table-cell">
+                          <span className="font-semibold text-sm">
+                            {proposal.order.amount.toLocaleString("fr-FR")} DA
+                          </span>
+                        </TableCell>
+                        <TableCell className="hidden lg:table-cell">
+                          {proposal.deliveryAddress ? (
+                            <span
+                              className="text-sm text-zinc-700 dark:text-zinc-300 max-w-[200px] truncate block"
+                              title={proposal.deliveryAddress}
+                            >
+                              {proposal.deliveryAddress}
+                            </span>
+                          ) : (
+                            <span className="text-sm text-muted-foreground">
+                              —
+                            </span>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {getStatusBadge(proposal.decision)}
+                        </TableCell>
                         <TableCell className="hidden lg:table-cell text-muted-foreground text-sm">
                           {formatDate(proposal.createdAt)}
                         </TableCell>
@@ -349,7 +394,9 @@ export default function ProposalsPage() {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                               <DropdownMenuItem asChild>
-                                <Link href={`/dashboard/proposals/${proposal.code}`}>
+                                <Link
+                                  href={`/dashboard/proposals/${proposal.code}`}
+                                >
                                   <Eye className="mr-2 h-4 w-4" />
                                   Voir détails
                                 </Link>

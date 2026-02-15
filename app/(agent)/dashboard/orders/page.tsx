@@ -73,6 +73,7 @@ interface Order {
     id: string;
     code: string;
     decision: string;
+    deliveryAddress?: string;
     paymentChoice?: string;
     booking?: {
       slot: {
@@ -131,15 +132,42 @@ export default function OrdersPage() {
 
   const getStatusBadge = (status: string) => {
     const statusMap: Record<string, { label: string; className: string }> = {
-      PENDING: { label: "En attente", className: "bg-gray-50 text-gray-700 border-gray-200" },
-      PROPOSAL_SENT: { label: "Proposition envoyée", className: "bg-blue-50 text-blue-700 border-blue-200" },
-      WAITING_RESPONSE: { label: "En attente de réponse", className: "bg-yellow-50 text-yellow-700 border-yellow-200" },
-      ACCEPTED: { label: "Acceptée", className: "bg-emerald-50 text-emerald-700 border-emerald-200" },
-      REFUSED: { label: "Refusée", className: "bg-red-50 text-red-700 border-red-200" },
-      SCHEDULED: { label: "Planifiée", className: "bg-indigo-50 text-indigo-700 border-indigo-200" },
-      IN_DELIVERY: { label: "En livraison", className: "bg-purple-50 text-purple-700 border-purple-200" },
-      DELIVERED: { label: "Livrée", className: "bg-emerald-50 text-emerald-700 border-emerald-200" },
-      CANCELLED: { label: "Annulée", className: "bg-red-50 text-red-700 border-red-200" },
+      PENDING: {
+        label: "En attente",
+        className: "bg-gray-50 text-gray-700 border-gray-200",
+      },
+      PROPOSAL_SENT: {
+        label: "Proposition envoyée",
+        className: "bg-blue-50 text-blue-700 border-blue-200",
+      },
+      WAITING_RESPONSE: {
+        label: "En attente de réponse",
+        className: "bg-yellow-50 text-yellow-700 border-yellow-200",
+      },
+      ACCEPTED: {
+        label: "Acceptée",
+        className: "bg-emerald-50 text-emerald-700 border-emerald-200",
+      },
+      REFUSED: {
+        label: "Refusée",
+        className: "bg-red-50 text-red-700 border-red-200",
+      },
+      SCHEDULED: {
+        label: "Planifiée",
+        className: "bg-indigo-50 text-indigo-700 border-indigo-200",
+      },
+      IN_DELIVERY: {
+        label: "En livraison",
+        className: "bg-purple-50 text-purple-700 border-purple-200",
+      },
+      DELIVERED: {
+        label: "Livrée",
+        className: "bg-emerald-50 text-emerald-700 border-emerald-200",
+      },
+      CANCELLED: {
+        label: "Annulée",
+        className: "bg-red-50 text-red-700 border-red-200",
+      },
     };
 
     const config = statusMap[status] || { label: status, className: "" };
@@ -154,19 +182,28 @@ export default function OrdersPage() {
     switch (choice) {
       case "PAY_ON_DELIVERY":
         return (
-          <Badge variant="outline" className="border-orange-200 text-orange-600 text-xs">
+          <Badge
+            variant="outline"
+            className="border-orange-200 text-orange-600 text-xs"
+          >
             À payer
           </Badge>
         );
       case "ALREADY_PAID":
         return (
-          <Badge variant="outline" className="border-emerald-200 text-emerald-600 text-xs">
+          <Badge
+            variant="outline"
+            className="border-emerald-200 text-emerald-600 text-xs"
+          >
             Payé
           </Badge>
         );
       case "EXEMPT":
         return (
-          <Badge variant="outline" className="border-blue-200 text-blue-600 text-xs">
+          <Badge
+            variant="outline"
+            className="border-blue-200 text-blue-600 text-xs"
+          >
             Exempté
           </Badge>
         );
@@ -192,11 +229,14 @@ export default function OrdersPage() {
     const matchesSearch =
       searchQuery === "" ||
       order.orderNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      order.client.firstName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      order.client.firstName
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase()) ||
       order.client.lastName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       order.client.phone.includes(searchQuery);
 
-    const matchesStatus = statusFilter === "all" || order.status === statusFilter;
+    const matchesStatus =
+      statusFilter === "all" || order.status === statusFilter;
 
     return matchesSearch && matchesStatus;
   });
@@ -225,7 +265,9 @@ export default function OrdersPage() {
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
-                <BreadcrumbPage className="font-medium">Commandes</BreadcrumbPage>
+                <BreadcrumbPage className="font-medium">
+                  Commandes
+                </BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
@@ -280,8 +322,12 @@ export default function OrdersPage() {
                 <SelectContent>
                   <SelectItem value="all">Tous les statuts</SelectItem>
                   <SelectItem value="PENDING">En attente</SelectItem>
-                  <SelectItem value="PROPOSAL_SENT">Proposition envoyée</SelectItem>
-                  <SelectItem value="WAITING_RESPONSE">En attente de réponse</SelectItem>
+                  <SelectItem value="PROPOSAL_SENT">
+                    Proposition envoyée
+                  </SelectItem>
+                  <SelectItem value="WAITING_RESPONSE">
+                    En attente de réponse
+                  </SelectItem>
                   <SelectItem value="SCHEDULED">Planifiée</SelectItem>
                   <SelectItem value="IN_DELIVERY">En livraison</SelectItem>
                   <SelectItem value="DELIVERED">Livrée</SelectItem>
@@ -300,10 +346,22 @@ export default function OrdersPage() {
                     <TableRow>
                       <TableHead>N° Commande</TableHead>
                       <TableHead>Client</TableHead>
+                      <TableHead className="hidden md:table-cell">
+                        Montant
+                      </TableHead>
                       <TableHead>Statut</TableHead>
-                      <TableHead className="hidden md:table-cell">Créneau</TableHead>
-                      <TableHead className="hidden lg:table-cell">Paiement</TableHead>
-                      <TableHead className="hidden lg:table-cell">Livreur</TableHead>
+                      <TableHead className="hidden md:table-cell">
+                        Adresse
+                      </TableHead>
+                      <TableHead className="hidden lg:table-cell">
+                        Créneau
+                      </TableHead>
+                      <TableHead className="hidden lg:table-cell">
+                        Paiement
+                      </TableHead>
+                      <TableHead className="hidden xl:table-cell">
+                        Livreur
+                      </TableHead>
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -335,35 +393,63 @@ export default function OrdersPage() {
                             </p>
                           </div>
                         </TableCell>
+                        <TableCell className="hidden md:table-cell">
+                          <span className="font-semibold text-sm">
+                            {order.amount.toLocaleString("fr-FR")} DA
+                          </span>
+                        </TableCell>
                         <TableCell>{getStatusBadge(order.status)}</TableCell>
                         <TableCell className="hidden md:table-cell">
+                          {order.proposal?.deliveryAddress ? (
+                            <span
+                              className="text-sm text-zinc-700 dark:text-zinc-300 max-w-[180px] truncate block"
+                              title={order.proposal.deliveryAddress}
+                            >
+                              {order.proposal.deliveryAddress}
+                            </span>
+                          ) : (
+                            <span className="text-sm text-muted-foreground">
+                              —
+                            </span>
+                          )}
+                        </TableCell>
+                        <TableCell className="hidden lg:table-cell">
                           {order.proposal?.booking ? (
                             <div className="flex items-center gap-1 text-sm">
                               <Calendar className="h-3 w-3 text-muted-foreground" />
                               <span>
-                                {formatDate(order.proposal.booking.slot.slotDate)}
+                                {formatDate(
+                                  order.proposal.booking.slot.slotDate,
+                                )}
                               </span>
                               <span className="text-muted-foreground">
-                                {formatSlotTime(order.proposal.booking.slot.slotHour)}
+                                {formatSlotTime(
+                                  order.proposal.booking.slot.slotHour,
+                                )}
                               </span>
                             </div>
                           ) : (
-                            <span className="text-muted-foreground text-sm">—</span>
+                            <span className="text-muted-foreground text-sm">
+                              —
+                            </span>
                           )}
                         </TableCell>
                         <TableCell className="hidden lg:table-cell">
                           {getPaymentBadge(order.proposal?.paymentChoice)}
                         </TableCell>
-                        <TableCell className="hidden lg:table-cell">
+                        <TableCell className="hidden xl:table-cell">
                           {order.driver ? (
                             <div className="flex items-center gap-1 text-sm">
                               <Truck className="h-3 w-3 text-muted-foreground" />
                               <span>
-                                {order.driver.firstName} {order.driver.lastName.charAt(0)}.
+                                {order.driver.firstName}{" "}
+                                {order.driver.lastName.charAt(0)}.
                               </span>
                             </div>
                           ) : (
-                            <span className="text-muted-foreground text-sm">Non assigné</span>
+                            <span className="text-muted-foreground text-sm">
+                              Non assigné
+                            </span>
                           )}
                         </TableCell>
                         <TableCell className="text-right">
@@ -376,7 +462,9 @@ export default function OrdersPage() {
                             <DropdownMenuContent align="end">
                               {order.proposal && (
                                 <DropdownMenuItem asChild>
-                                  <Link href={`/dashboard/proposals/${order.proposal.code}`}>
+                                  <Link
+                                    href={`/dashboard/proposals/${order.proposal.code}`}
+                                  >
                                     <Eye className="mr-2 h-4 w-4" />
                                     Voir proposition
                                   </Link>
