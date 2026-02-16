@@ -475,6 +475,17 @@ export function ProposalView({ initialProposal }: ProposalViewProps) {
                           : "border-zinc-200 dark:border-zinc-700"
                       }`}
                       onClick={() => handlePaymentSelected(option.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "ArrowDown" || e.key === "ArrowRight") {
+                          e.preventDefault();
+                          const next = e.currentTarget.nextElementSibling as HTMLButtonElement | null;
+                          next?.focus();
+                        } else if (e.key === "ArrowUp" || e.key === "ArrowLeft") {
+                          e.preventDefault();
+                          const prev = e.currentTarget.previousElementSibling as HTMLButtonElement | null;
+                          prev?.focus();
+                        }
+                      }}
                     >
                       <p className="font-medium text-zinc-900 dark:text-zinc-100">
                         {option.label}
