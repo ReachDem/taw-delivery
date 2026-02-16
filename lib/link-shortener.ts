@@ -58,13 +58,9 @@ export async function createShortLink(
     };
 
     // Add OG metadata if provided
-    if (metadata?.ogTitle || metadata?.ogDescription || metadata?.ogImageUrl) {
-        body.og = {
-            title: metadata.ogTitle || `Proposition TGVAIRWABO ${code}`,
-            description: metadata.ogDescription || "Votre colis est arrivé ! Choisissez votre mode de livraison.",
-            image: metadata.ogImageUrl || undefined,
-        };
-    }
+    body.title = "Proposition TGVAIRWABO";
+    if (metadata?.ogDescription) body.description = metadata.ogDescription;
+    if (metadata?.ogImageUrl) body.image = metadata.ogImageUrl;
 
     // Enable link cloaking if requested
     if (metadata?.cloaking) {

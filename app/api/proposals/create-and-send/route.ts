@@ -47,7 +47,13 @@ export async function POST(request: Request) {
     // Get the agent associated with the current user
     const agent = await prisma.agent.findUnique({
         where: { userId: session.user.id },
-        include: { agency: true },
+        include: { 
+            agency: {
+                include: {
+                    organization: true
+                }
+            } 
+        },
     });
 
     if (!agent) {
@@ -151,10 +157,15 @@ export async function POST(request: Request) {
         let shortUrl: string = proposalUrl;
         try {
             const agencyName = agent.agency?.name || "TGVAIRWABO";
+            // Determine OG Image: Uploaded Parcel > Agency Logo > Placeholder
+            const ogImageUrl = data.parcelImageUrl || 
+                               agent.agency?.organization?.logo || 
+                               "https://placehold.co/600x400?text=Colis";
+
             const shortLink = await upsertShortLink(proposalUrl, code, {
                 ogTitle: `📦 Proposition ${agencyName} - ${code}`,
                 ogDescription: data.contents.slice(0, 160),
-                ogImageUrl: data.parcelImageUrl || undefined,
+                ogImageUrl,
                 cloaking: true,
             });
             shortUrl = shortLink.shortUrl;

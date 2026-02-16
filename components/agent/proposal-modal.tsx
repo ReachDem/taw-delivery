@@ -88,13 +88,13 @@ export function ProposalModal({ open, onOpenChange }: ProposalModalProps) {
             </div>
           </div>
         </DialogHeader>
-        <ScrollArea className="flex-1 px-6 py-4">
+        <div className="flex-1 overflow-y-auto px-6 py-4">
           <ProposalForm
             onSuccess={handleSuccess}
             onCancel={handleCancel}
             showCancel={true}
           />
-        </ScrollArea>
+        </div>
       </DialogContent>
     </Dialog>
   );
