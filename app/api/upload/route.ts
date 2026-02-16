@@ -32,7 +32,14 @@ export async function POST(request: NextRequest) {
         }
 
         // Generate key and upload
-        const extension = file.name.split(".").pop() || "jpg";
+        const mimeToExtension: Record<string, string> = {
+            "image/jpeg": "jpg",
+            "image/jpg": "jpg",
+            "image/png": "png",
+            "image/webp": "webp",
+            "image/gif": "gif",
+        };
+        const extension = mimeToExtension[file.type] || "jpg";
         const key = generateParcelPhotoKey(extension);
         const buffer = Buffer.from(await file.arrayBuffer());
 
