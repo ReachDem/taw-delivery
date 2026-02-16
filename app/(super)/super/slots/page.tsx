@@ -1,5 +1,4 @@
 import prisma from "@/lib/prisma";
-import { redirect } from "next/navigation";
 import { SlotsGrid } from "@/components/admin/slots-grid";
 import { AgencySelector } from "@/components/super-admin/agency-selector";
 
