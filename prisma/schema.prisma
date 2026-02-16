@@ -247,7 +247,7 @@ model Order {
   productDescription  String
   
   // Pricing breakdown
-  productAmount       Decimal     @default(0) @db.Decimal(10, 2)  // Montant du produit/colis
+  productAmount       Decimal?    @db.Decimal(10, 2)  // Montant du produit/colis
   deliveryFee         Decimal?    @db.Decimal(10, 2)  // Frais de livraison (null si pas encore déterminé)
   extraFee            Decimal?    @db.Decimal(10, 2)  // Frais supplémentaires (ajustement livreur)
   amount              Decimal     @db.Decimal(10, 2)  // Total = productAmount + deliveryFee + extraFee (legacy, kept for compatibility)
