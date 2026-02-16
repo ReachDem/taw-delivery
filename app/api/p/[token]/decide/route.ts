@@ -102,7 +102,8 @@ export async function POST(request: Request, { params }: RouteParams) {
         }
 
         // Calculate total amount
-        const productAmount = Number(proposal.order.productAmount);
+        // Calculate total amount
+        const productAmount = Number(proposal.order.productAmount) || Number(proposal.order.amount);
         const finalDeliveryFee = deliveryFee ? Number(deliveryFee) : 0;
         const totalAmount = productAmount + finalDeliveryFee;
 
