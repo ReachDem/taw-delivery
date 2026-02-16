@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "TAW Delivery",
-  description: "TAW Delivery",
+  title: "TGVAIRWABO",
+  description: "TGVAIRWABO",
 };
 
 export default function RootLayout({

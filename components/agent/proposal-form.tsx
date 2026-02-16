@@ -299,7 +299,7 @@ export function ProposalForm({
             />
 
             {photoPreview ? (
-              <div className="relative rounded-lg overflow-hidden border border-border">
+              <div className="relative rounded-md overflow-hidden border border-border">
                 <img
                   src={photoPreview}
                   alt="Aperçu du colis"
@@ -327,7 +327,7 @@ export function ProposalForm({
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="w-full h-28 border-2 border-dashed border-muted-foreground/25 rounded-lg flex flex-col items-center justify-center gap-2 text-muted-foreground hover:border-emerald-500/50 hover:text-emerald-600 transition-colors"
+                className="w-full h-28 border-2 border-dashed border-muted-foreground/25 rounded-md flex flex-col items-center justify-center gap-2 text-muted-foreground hover:border-emerald-500/50 hover:text-emerald-600 transition-colors"
               >
                 <Camera className="h-6 w-6" />
                 <span className="text-sm">Prendre une photo ou choisir</span>

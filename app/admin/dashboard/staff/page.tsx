@@ -71,12 +71,18 @@ export default function AdminStaffPage() {
         if (orgs && orgs.length > 0) {
           const firstOrgId = orgs[0].id;
           setCurrentOrgId(firstOrgId);
-          // We might want to set it as active too?
+          // Set it as active then re-fetch members
           await authClient.organization.setActive({
             organizationId: firstOrgId,
           });
-          // Re-fetch data?
-          // For now, just set the ID so invitation works
+          const { data: org } = await authClient.organization.getFullOrganization();
+          if (org) {
+            const filteredMembers = (org.members || []).filter(
+              (m: any) => m.user?.role !== "SUPER_ADMIN",
+            );
+            setMembers(filteredMembers);
+            setInvitations(org.invitations || []);
+          }
         }
       }
     } catch (error) {

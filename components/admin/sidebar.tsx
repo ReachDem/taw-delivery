@@ -71,10 +71,10 @@ export function AdminSidebar({
           </div>
           <div className="flex flex-col group-data-[collapsible=icon]:hidden">
             <span className="text-sm font-semibold">
-              {agency?.city || "TAW Delivery"}
+              {agency?.name || "TGVAIRWABO"}
             </span>
             <span className="text-xs text-muted-foreground">
-              Administration
+              {agency?.city || "Administration"}
             </span>
           </div>
         </div>

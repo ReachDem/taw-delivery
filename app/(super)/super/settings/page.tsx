@@ -27,7 +27,7 @@ export default function SettingsPage() {
                     <CardContent className="space-y-4">
                         <div className="grid gap-2">
                             <Label htmlFor="platform-name">Nom de la plateforme</Label>
-                            <Input id="platform-name" defaultValue="TAW Delivery" />
+                            <Input id="platform-name" defaultValue="TGVAIRWABO" />
                         </div>
                         <div className="grid gap-2">
                             <Label htmlFor="support-email">Email de support</Label>

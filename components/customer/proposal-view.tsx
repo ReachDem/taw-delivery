@@ -250,7 +250,7 @@ export function ProposalView({ initialProposal }: ProposalViewProps) {
         </div>
 
         {/* Order Details Card */}
-        <div className="rounded-xl bg-white p-6 shadow-lg dark:bg-zinc-800">
+        <div className="rounded-md bg-white p-6 shadow-sm border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-800">
           <div className="space-y-4">
             <div>
               <p className="text-sm text-zinc-500">Client</p>
@@ -268,7 +268,7 @@ export function ProposalView({ initialProposal }: ProposalViewProps) {
             {proposal.order.parcelImageUrl && (
               <div>
                 <p className="text-sm text-zinc-500 mb-2">Photo du colis</p>
-                <div className="rounded-lg overflow-hidden border border-zinc-200 dark:border-zinc-700">
+                <div className="rounded-md overflow-hidden border border-zinc-200 dark:border-zinc-700">
                   <img
                     src={proposal.order.parcelImageUrl}
                     alt="Photo du colis"
@@ -302,14 +302,14 @@ export function ProposalView({ initialProposal }: ProposalViewProps) {
             {step === "overview" && (
               <div className="space-y-3">
                 <button
-                  className="w-full rounded-lg bg-emerald-600 py-4 text-lg font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-50"
+                  className="w-full rounded-md bg-emerald-600 py-4 text-lg font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-50"
                   onClick={startAcceptFlow}
                   disabled={isSubmitting}
                 >
                   ✓ Accepter la Livraison
                 </button>
                 <button
-                  className="w-full rounded-lg border border-zinc-300 py-4 text-lg font-semibold text-zinc-700 transition hover:bg-zinc-50 dark:border-zinc-600 dark:text-zinc-300 disabled:opacity-50"
+                  className="w-full rounded-md border border-zinc-300 py-4 text-lg font-semibold text-zinc-700 transition hover:bg-zinc-50 dark:border-zinc-600 dark:text-zinc-300 disabled:opacity-50"
                   onClick={handleRefuse}
                   disabled={isSubmitting}
                 >
@@ -322,7 +322,7 @@ export function ProposalView({ initialProposal }: ProposalViewProps) {
 
             {/* ─── ZONE SELECTION STEP ─── */}
             {step === "zone" && (
-              <div className="rounded-xl bg-white p-6 shadow-lg dark:bg-zinc-800 space-y-4">
+              <div className="rounded-md bg-white p-6 shadow-sm border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-800 space-y-4">
                 <StepHeader
                   current={getStepNumber()}
                   total={totalSteps}
@@ -369,7 +369,7 @@ export function ProposalView({ initialProposal }: ProposalViewProps) {
 
             {/* ─── SLOT SELECTION STEP ─── */}
             {step === "slot" && (
-              <div className="rounded-xl bg-white p-6 shadow-lg dark:bg-zinc-800 space-y-4">
+              <div className="rounded-md bg-white p-6 shadow-sm border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-800 space-y-4">
                 <StepHeader
                   current={getStepNumber()}
                   total={totalSteps}
@@ -457,7 +457,7 @@ export function ProposalView({ initialProposal }: ProposalViewProps) {
 
             {/* ─── PAYMENT SELECTION STEP ─── */}
             {step === "payment" && (
-              <div className="rounded-xl bg-white p-6 shadow-lg dark:bg-zinc-800 space-y-4">
+              <div className="rounded-md bg-white p-6 shadow-sm border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-800 space-y-4">
                 <StepHeader
                   current={getStepNumber()}
                   total={totalSteps}
@@ -516,7 +516,7 @@ export function ProposalView({ initialProposal }: ProposalViewProps) {
 
             {/* ─── CONFIRM STEP ─── */}
             {step === "confirm" && (
-              <div className="rounded-xl bg-white p-6 shadow-lg dark:bg-zinc-800 space-y-4">
+              <div className="rounded-md bg-white p-6 shadow-sm border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-800 space-y-4">
                 <StepHeader
                   current={getStepNumber()}
                   total={totalSteps}
@@ -570,7 +570,7 @@ export function ProposalView({ initialProposal }: ProposalViewProps) {
                 </div>
 
                 <button
-                  className="w-full rounded-lg bg-emerald-600 py-4 text-lg font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-50"
+                  className="w-full rounded-md bg-emerald-600 py-4 text-lg font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-50"
                   onClick={handleConfirm}
                   disabled={isSubmitting}
                 >

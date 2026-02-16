@@ -107,7 +107,7 @@ export function SlotsGrid({
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Users className="h-5 w-5" />8 créneaux · 4 livraisons max par
+            <Users className="h-5 w-5" />{slots.length} créneaux · {slots.length > 0 ? slots[0].maxCapacity : 0} livraisons max par
             créneau
           </CardTitle>
         </CardHeader>
@@ -161,7 +161,7 @@ export function SlotsGrid({
               return (
                 <div
                   key={slot.id}
-                  className="rounded-lg border border-zinc-200 dark:border-zinc-700 p-4 space-y-3"
+                  className="rounded-md border border-zinc-200 dark:border-zinc-700 p-4 space-y-3"
                 >
                   {/* Slot header */}
                   <div className="flex items-center justify-between">

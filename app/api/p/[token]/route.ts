@@ -92,6 +92,7 @@ export async function GET(request: Request, { params }: RouteParams) {
         },
         booking: proposal.booking
             ? {
+                position: proposal.booking.position,
                 slotDate: proposal.booking.slot.slotDate,
                 slotHour: proposal.booking.slot.slotHour,
             }

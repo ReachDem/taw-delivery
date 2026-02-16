@@ -184,8 +184,44 @@ model Agency {
   timeSlots     TimeSlot[]
   deliveryZones DeliveryZone[]
   organization  Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+  settings      AgencySettings?
 
   @@map("agency")
+}
+
+// ============================================
+// AGENCY SETTINGS
+// ============================================
+
+model AgencySettings {
+  id        String @id @default(uuid())
+  agencyId  String @unique
+
+  // Tarification (3 niveaux de frais de livraison)
+  tariffLabel1 String  @default("Standard")
+  tariffAmount1 Decimal @default(1000) @db.Decimal(10, 2)
+  tariffLabel2 String  @default("Express")
+  tariffAmount2 Decimal @default(2000) @db.Decimal(10, 2)
+  tariffLabel3 String  @default("Premium")
+  tariffAmount3 Decimal @default(3500) @db.Decimal(10, 2)
+
+  // Devise
+  currency String @default("FCFA")
+
+  // Créneaux de livraison
+  slotStartHour  Int @default(9)   // Heure de début (8-20)
+  slotEndHour    Int @default(17)  // Heure de fin (9-21)
+  slotMaxCapacity Int @default(4)  // Places par créneau (3-6)
+
+  // Expiration des propositions
+  proposalExpiryHours Int @default(48)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  agency Agency @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+
+  @@map("agency_settings")
 }
 
 model Agent {

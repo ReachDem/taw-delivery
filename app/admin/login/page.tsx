@@ -149,7 +149,7 @@ function LoginForm() {
                     </form>
                 </CardContent>
                 <CardFooter className="text-center text-sm text-muted-foreground justify-center">
-                    Taw Delivery Admin Portal
+                    TGVAIRWABO Admin
                 </CardFooter>
             </Card>
         </div>

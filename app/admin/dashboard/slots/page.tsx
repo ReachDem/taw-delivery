@@ -1,5 +1,5 @@
 import prisma from "@/lib/prisma";
-import { getAgencyDetails } from "@/app/actions/agency";
+import { getAgencyDetails, getAgencySettings } from "@/app/actions/agency";
 import { redirect } from "next/navigation";
 import { SlotsGrid } from "@/components/admin/slots-grid";
 
@@ -11,14 +11,16 @@ export default async function AdminSlotsPage({
   const agency = await getAgencyDetails();
   if (!agency) redirect("/admin/dashboard");
 
+  const settings = await getAgencySettings(agency.id);
+
   const params = await searchParams;
   const selectedDate = params.date ? new Date(params.date) : new Date();
   selectedDate.setHours(0, 0, 0, 0);
 
-  // Ensure slots exist for this day (lazy generation)
-  const START_HOUR = 9;
-  const END_HOUR = 17;
-  const MAX_CAPACITY = 4;
+  // Use agency settings for slot generation
+  const START_HOUR = settings.slotStartHour;
+  const END_HOUR = settings.slotEndHour;
+  const MAX_CAPACITY = settings.slotMaxCapacity;
 
   const existingCount = await prisma.timeSlot.count({
     where: {
