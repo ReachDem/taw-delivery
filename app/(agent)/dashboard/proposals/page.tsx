@@ -362,7 +362,7 @@ export default function ProposalsPage() {
                         </TableCell>
                         <TableCell className="hidden md:table-cell">
                           <span className="font-semibold text-sm">
-                            {proposal.order.amount.toLocaleString("fr-FR")} DA
+                            {proposal.order.amount.toLocaleString("fr-FR")} FCFA
                           </span>
                         </TableCell>
                         <TableCell className="hidden lg:table-cell">
