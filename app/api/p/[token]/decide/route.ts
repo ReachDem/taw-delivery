@@ -151,7 +151,7 @@ export async function POST(request: Request, { params }: RouteParams) {
                     deliveryZoneId,
                     deliveryFee,
                     amount: totalAmount,
-                    deliveryAddress: data.deliveryAddress,
+                    deliveryAddress: data.deliveryAddress || proposal.deliveryAddress,
                     addressDetails: data.addressDetails,
                     latitude: data.latitude,
                     longitude: data.longitude,
