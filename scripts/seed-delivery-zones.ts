@@ -35,10 +35,11 @@ async function main() {
 
     try {
         // Find agencies to assign zones to (Douala agencies)
-        let agencies = await prisma.agency.findMany({
+        const agencies = await prisma.agency.findMany({
             where: {
                 city: {
-                    in: ['Douala', 'douala', 'DOUALA']
+                    equals: 'Douala',
+                    mode: 'insensitive'
                 }
             }
         });
