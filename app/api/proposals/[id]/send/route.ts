@@ -2,7 +2,7 @@ import prisma from "@/lib/prisma";
 import { OrderStatus, MessageChannel, MessageStatus } from "@/lib/generated/prisma/client";
 import { apiResponse, apiError } from "@/lib/api-helpers";
 import { requireAuth } from "@/lib/auth-middleware";
-import { upsertShortLink } from "@/lib/link-shortener";
+import { createShortLink } from "@/lib/link-shortener";
 import { sendSMS } from "@/lib/sms";
 import { getProposalUrl } from "@/lib/url";
 
@@ -60,7 +60,7 @@ export async function POST(
         // Create/update short link
         let shortUrl: string;
         try {
-            const shortLink = await upsertShortLink(proposalUrl, proposal.code);
+            const shortLink = await createShortLink(proposalUrl, proposal.code);
             shortUrl = shortLink.shortUrl;
 
             // Update proposal with short URL

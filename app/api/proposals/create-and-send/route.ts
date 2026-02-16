@@ -4,7 +4,7 @@ import { OrderStatus, MessageChannel, MessageStatus } from "@/lib/generated/pris
 import { apiResponse, apiError, validateBody } from "@/lib/api-helpers";
 import { requireAuth } from "@/lib/auth-middleware";
 import { generateUniqueCode } from "@/lib/code-generator";
-import { upsertShortLink } from "@/lib/link-shortener";
+import { createShortLink } from "@/lib/link-shortener";
 import { sendSMS } from "@/lib/sms";
 import { getProposalUrl } from "@/lib/url";
 
@@ -162,7 +162,7 @@ export async function POST(request: Request) {
                                agent.agency?.organization?.logo || 
                                "https://placehold.co/600x400?text=Colis";
 
-            const shortLink = await upsertShortLink(proposalUrl, code, {
+            const shortLink = await createShortLink(proposalUrl, code, {
                 ogTitle: `📦 Proposition ${agencyName} - ${code}`,
                 ogDescription: data.contents.slice(0, 160),
                 ogImageUrl,
