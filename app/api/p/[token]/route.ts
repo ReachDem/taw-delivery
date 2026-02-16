@@ -72,6 +72,7 @@ export async function GET(request: Request, { params }: RouteParams) {
             id: proposal.order.id,
             orderNumber: proposal.order.orderNumber,
             productDescription: proposal.order.productDescription,
+            parcelImageUrl: proposal.order.parcelImageUrl,
             status: proposal.order.status,
             amount: proposal.order.amount,
             specialInstructions: proposal.order.specialInstructions,

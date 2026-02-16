@@ -13,6 +13,7 @@ interface ProposalViewProps {
     paymentChoice: string | null;
     order: {
       productDescription: string;
+      parcelImageUrl: string | null;
       amount: number;
       locationKnown?: boolean;
       client: {
@@ -262,6 +263,20 @@ export function ProposalView({ initialProposal }: ProposalViewProps) {
               <p className="text-sm text-zinc-500">Commande</p>
               <p className="font-medium">{proposal.order.productDescription}</p>
             </div>
+
+            {/* Photo du colis */}
+            {proposal.order.parcelImageUrl && (
+              <div>
+                <p className="text-sm text-zinc-500 mb-2">Photo du colis</p>
+                <div className="rounded-lg overflow-hidden border border-zinc-200 dark:border-zinc-700">
+                  <img
+                    src={proposal.order.parcelImageUrl}
+                    alt="Photo du colis"
+                    className="w-full h-48 object-cover"
+                  />
+                </div>
+              </div>
+            )}
             <div>
               <p className="text-sm text-zinc-500">Montant</p>
               <p className="text-xl font-bold text-emerald-600">

@@ -40,6 +40,7 @@ export default async function ProposalPage({ params }: ProposalPageProps) {
     paymentChoice: proposal.paymentChoice,
     order: {
       productDescription: proposal.order.productDescription,
+      parcelImageUrl: proposal.order.parcelImageUrl,
       amount: Number(proposal.order.amount),
       locationKnown: proposal.order.locationKnown,
       client: proposal.order.client,

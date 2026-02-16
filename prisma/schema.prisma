@@ -245,6 +245,7 @@ model Order {
   agencyId            String
   driverId            String?
   productDescription  String
+  parcelImageUrl      String?                         // Photo du colis (URL R2)
   
   // Pricing breakdown
   productAmount       Decimal?    @db.Decimal(10, 2)  // Montant du produit/colis
