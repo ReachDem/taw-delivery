@@ -107,6 +107,7 @@ export async function POST(request: Request) {
                     agentId: agent.id,
                     productDescription: data.contents,
                     parcelImageUrl: data.parcelImageUrl || null,
+                    productAmount: amount,
                     amount,
                     specialInstructions: data.refId ? `REF: ${data.refId}` : null,
                     status: OrderStatus.PROPOSAL_SENT,
