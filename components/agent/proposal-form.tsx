@@ -60,7 +60,7 @@ export function ProposalForm({
   // Photo state
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
-  const [isUploading, setIsUploading] = useState(false);
+  const [, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const {
