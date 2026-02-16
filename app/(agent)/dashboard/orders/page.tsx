@@ -395,7 +395,7 @@ export default function OrdersPage() {
                         </TableCell>
                         <TableCell className="hidden md:table-cell">
                           <span className="font-semibold text-sm">
-                            {order.amount.toLocaleString("fr-FR")} DA
+                            {order.amount.toLocaleString("fr-FR")} FCFA
                           </span>
                         </TableCell>
                         <TableCell>{getStatusBadge(order.status)}</TableCell>
