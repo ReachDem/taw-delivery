@@ -16,17 +16,20 @@ interface RouteParams {
 export async function GET(request: Request, { params }: RouteParams) {
     const { token } = await params;
 
-    // Find proposal by code
+    // Find proposal by code with full data
     const proposal = await prisma.deliveryProposal.findUnique({
         where: { code: token },
         include: {
             order: {
                 include: {
                     client: {
-                        select: { firstName: true, lastName: true },
+                        select: { id: true, firstName: true, lastName: true, phone: true, email: true },
                     },
                     agency: {
-                        select: { name: true, address: true, city: true, phone: true },
+                        select: { id: true, name: true, address: true, city: true, phone: true },
+                    },
+                    deliveryZone: {
+                        select: { id: true, name: true, city: true, baseFee: true },
                     },
                 },
             },
@@ -46,7 +49,6 @@ export async function GET(request: Request, { params }: RouteParams) {
 
     // Check if expired
     if (new Date() > proposal.expiresAt && proposal.decision === "PENDING") {
-        // Mark as expired if not already decided
         await prisma.deliveryProposal.update({
             where: { id: proposal.id },
             data: { decision: "EXPIRED" },
@@ -55,23 +57,42 @@ export async function GET(request: Request, { params }: RouteParams) {
         return goneError("Cette proposition a expiré");
     }
 
-    // Return sanitized proposal data (no sensitive info)
+    // Return proposal data
     return apiResponse({
         id: proposal.id,
         code: proposal.code,
         decision: proposal.decision,
         expiresAt: proposal.expiresAt,
+        createdAt: proposal.createdAt,
+        decidedAt: proposal.decidedAt,
+        shortUrl: proposal.shortUrl,
         deliveryAddress: proposal.deliveryAddress,
         paymentChoice: proposal.paymentChoice,
         order: {
+            id: proposal.order.id,
+            orderNumber: proposal.order.orderNumber,
             productDescription: proposal.order.productDescription,
-            amount: proposal.order.amount,
+            parcelImageUrl: proposal.order.parcelImageUrl,
             status: proposal.order.status,
+            amount: proposal.order.amount,
+            specialInstructions: proposal.order.specialInstructions,
             client: proposal.order.client,
             agency: proposal.order.agency,
+            // Pricing breakdown
+            pricing: {
+                productAmount: proposal.order.productAmount,
+                deliveryFee: proposal.order.deliveryFee,
+                totalAmount: proposal.order.amount,
+            },
+            // Location info
+            locationKnown: proposal.order.locationKnown,
+            deliveryZone: proposal.order.deliveryZone,
+            deliveryAddress: proposal.order.deliveryAddress,
+            addressDetails: proposal.order.addressDetails,
         },
         booking: proposal.booking
             ? {
+                position: proposal.booking.position,
                 slotDate: proposal.booking.slot.slotDate,
                 slotHour: proposal.booking.slot.slotHour,
             }

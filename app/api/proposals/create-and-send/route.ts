@@ -4,7 +4,7 @@ import { OrderStatus, MessageChannel, MessageStatus } from "@/lib/generated/pris
 import { apiResponse, apiError, validateBody } from "@/lib/api-helpers";
 import { requireAuth } from "@/lib/auth-middleware";
 import { generateUniqueCode } from "@/lib/code-generator";
-import { upsertShortLink } from "@/lib/link-shortener";
+import { createShortLink } from "@/lib/link-shortener";
 import { sendSMS } from "@/lib/sms";
 import { getProposalUrl } from "@/lib/url";
 
@@ -25,6 +25,7 @@ const createAndSendSchema = z.object({
     refId: z.string().optional(),
     contents: z.string().min(3, "Description requise"),
     amount: z.string().optional(),
+    parcelImageUrl: z.string().url().optional(),
 
     // Options
     expiresInHours: z.number().min(1).max(168).default(48),
@@ -46,7 +47,13 @@ export async function POST(request: Request) {
     // Get the agent associated with the current user
     const agent = await prisma.agent.findUnique({
         where: { userId: session.user.id },
-        include: { agency: true },
+        include: { 
+            agency: {
+                include: {
+                    organization: true
+                }
+            } 
+        },
     });
 
     if (!agent) {
@@ -105,6 +112,8 @@ export async function POST(request: Request) {
                     agencyId: agent.agencyId,
                     agentId: agent.id,
                     productDescription: data.contents,
+                    parcelImageUrl: data.parcelImageUrl || null,
+                    productAmount: amount,
                     amount,
                     specialInstructions: data.refId ? `REF: ${data.refId}` : null,
                     status: OrderStatus.PROPOSAL_SENT,
@@ -144,10 +153,21 @@ export async function POST(request: Request) {
         // Generate proposal URL
         const proposalUrl = getProposalUrl(code);
 
-        // Create short link
+        // Create short link with OG metadata + cloaking
         let shortUrl: string = proposalUrl;
         try {
-            const shortLink = await upsertShortLink(proposalUrl, code);
+            const agencyName = agent.agency?.name || "TGVAIRWABO";
+            // Determine OG Image: Uploaded Parcel > Agency Logo > Placeholder
+            const ogImageUrl = data.parcelImageUrl || 
+                               agent.agency?.organization?.logo || 
+                               "https://placehold.co/600x400?text=Colis";
+
+            const shortLink = await createShortLink(proposalUrl, code, {
+                ogTitle: `📦 Proposition ${agencyName} - ${code}`,
+                ogDescription: data.contents.slice(0, 160),
+                ogImageUrl,
+                cloaking: true,
+            });
             shortUrl = shortLink.shortUrl;
 
             // Update proposal with short URL (outside transaction, non-critical)

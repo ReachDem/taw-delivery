@@ -1,5 +1,5 @@
 /**
- * Email templates for TAW Delivery
+ * Email templates for TGVAIRWABO
  */
 
 export interface AdminInvitationEmailData {
@@ -24,7 +24,7 @@ export function generateAdminInvitationEmail(data: AdminInvitationEmailData): st
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Invitation TAW Delivery</title>
+  <title>Invitation TGVAIRWABO</title>
 </head>
 <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f5;">
   <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5; padding: 40px 20px;">
@@ -36,7 +36,7 @@ export function generateAdminInvitationEmail(data: AdminInvitationEmailData): st
           <tr>
             <td style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px 40px 30px; border-radius: 8px 8px 0 0; text-align: center;">
               <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 600;">
-                TAW Delivery
+                TGVAIRWABO
               </h1>
               <p style="margin: 10px 0 0; color: #e0e7ff; font-size: 14px;">
                 Plateforme de gestion de livraison
@@ -52,7 +52,7 @@ export function generateAdminInvitationEmail(data: AdminInvitationEmailData): st
               </h2>
               
               <p style="margin: 0 0 20px; color: #4b5563; font-size: 16px; line-height: 1.6;">
-                <strong>${data.inviterName}</strong> vous invite à rejoindre TAW Delivery en tant que <strong>${roleText}</strong>${agencyText}.
+                <strong>${data.inviterName}</strong> vous invite à rejoindre TGVAIRWABO en tant que <strong>${roleText}</strong>${agencyText}.
               </p>
 
               <p style="margin: 0 0 30px; color: #6b7280; font-size: 15px; line-height: 1.6;">
@@ -98,7 +98,7 @@ export function generateAdminInvitationEmail(data: AdminInvitationEmailData): st
                 Si vous n'avez pas demandé cette invitation, vous pouvez ignorer cet email en toute sécurité.
               </p>
               <p style="margin: 0; color: #9ca3af; font-size: 12px;">
-                © ${new Date().getFullYear()} TAW Delivery. Tous droits réservés.
+                © ${new Date().getFullYear()} TGVAIRWABO. Tous droits réservés.
               </p>
             </td>
           </tr>
@@ -120,11 +120,11 @@ export function generateAdminInvitationTextEmail(data: AdminInvitationEmailData)
     const agencyText = data.agencyName ? ` de l'agence ${data.agencyName}` : '';
 
     return `
-TAW Delivery - Invitation
+TGVAIRWABO - Invitation
 
 Bonjour ${data.inviteeName},
 
-${data.inviterName} vous invite à rejoindre TAW Delivery en tant que ${roleText}${agencyText}.
+${data.inviterName} vous invite à rejoindre TGVAIRWABO en tant que ${roleText}${agencyText}.
 
 Pour activer votre compte, veuillez cliquer sur le lien ci-dessous et créer votre mot de passe sécurisé :
 
@@ -134,6 +134,6 @@ ${data.invitationLink}
 
 Si vous n'avez pas demandé cette invitation, vous pouvez ignorer cet email en toute sécurité.
 
-© ${new Date().getFullYear()} TAW Delivery. Tous droits réservés.
+© ${new Date().getFullYear()} TGVAIRWABO. Tous droits réservés.
   `.trim();
 }

@@ -9,18 +9,11 @@ import {
     forbiddenError,
 } from "@/lib/api-helpers";
 import { requireAdmin } from "@/lib/auth-middleware";
+import { getAgencySettings } from "@/app/actions/agency";
 
 // ============================================
 // Validation Schemas
 // ============================================
-
-const createSlotsSchema = z.object({
-    startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Format de date invalide (YYYY-MM-DD)"),
-    endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Format de date invalide (YYYY-MM-DD)"),
-    startHour: z.number().min(8).max(20).default(9),
-    endHour: z.number().min(9).max(21).default(17),
-    maxCapacity: z.number().min(1).max(20).default(4),
-});
 
 interface RouteParams {
     params: Promise<{ id: string }>;
@@ -89,10 +82,6 @@ export async function POST(request: Request, { params }: RouteParams) {
 
     const { id } = await params;
 
-    const validation = await validateBody(request, createSlotsSchema);
-    if (!validation.success) return validation.error;
-    const data = validation.data;
-
     // Verify agency exists and user has access
     const agency = await prisma.agency.findUnique({
         where: { id },
@@ -116,6 +105,21 @@ export async function POST(request: Request, { params }: RouteParams) {
             return forbiddenError();
         }
     }
+
+    // Get agency settings for defaults
+    const settings = await getAgencySettings(id);
+
+    const createSlotsSchema = z.object({
+        startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Format de date invalide (YYYY-MM-DD)"),
+        endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Format de date invalide (YYYY-MM-DD)"),
+        startHour: z.number().min(6).max(20).default(settings.slotStartHour),
+        endHour: z.number().min(7).max(22).default(settings.slotEndHour),
+        maxCapacity: z.number().min(1).max(20).default(settings.slotMaxCapacity),
+    });
+
+    const validation = await validateBody(request, createSlotsSchema);
+    if (!validation.success) return validation.error;
+    const data = validation.data;
 
     // Validate dates
     const startDate = new Date(data.startDate);

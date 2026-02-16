@@ -37,7 +37,7 @@ export interface SendEmailOptions {
 export async function sendEmail(options: SendEmailOptions) {
     try {
         const info = await transporter.sendMail({
-            from: `"TAW Delivery" <${process.env.SMTP_USER}>`,
+            from: `"TGVAIRWABO" <${process.env.SMTP_USER}>`,
             to: options.to,
             subject: options.subject,
             html: options.html,

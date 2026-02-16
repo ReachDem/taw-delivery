@@ -1,184 +1,137 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
+import prisma from "@/lib/prisma";
+import { SlotsGrid } from "@/components/admin/slots-grid";
+import { AgencySelector } from "@/components/super-admin/agency-selector";
+import { getAgencySettings } from "@/app/actions/agency";
 
-export default function SlotsPage() {
+export default async function SuperSlotsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ date?: string; agency?: string }>;
+}) {
+  const params = await searchParams;
+
+  // Fetch all agencies
+  const agencies = await prisma.agency.findMany({
+    select: { id: true, name: true, city: true },
+    orderBy: { name: "asc" },
+  });
+
+  if (agencies.length === 0) {
     return (
-        <div className="flex flex-col gap-6 p-6">
-            <div className="flex flex-col gap-2">
-                <h1 className="text-3xl font-bold tracking-tight">Créneaux</h1>
-                <p className="text-muted-foreground">
-                    Gérer les créneaux de livraison de toutes les agences
-                </p>
-            </div>
-
-            {/* Filters */}
-            <Card>
-                <CardContent className="pt-6">
-                    <div className="flex gap-4">
-                        <Select>
-                            <SelectTrigger className="w-[200px]">
-                                <SelectValue placeholder="Agence" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="all">Toutes les agences</SelectItem>
-                                <SelectItem value="plateau">Agence Plateau</SelectItem>
-                                <SelectItem value="parcelles">Agence Parcelles</SelectItem>
-                                <SelectItem value="almadies">Agence Almadies</SelectItem>
-                            </SelectContent>
-                        </Select>
-                        <Select>
-                            <SelectTrigger className="w-[200px]">
-                                <SelectValue placeholder="Date" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="today">Aujourd'hui</SelectItem>
-                                <SelectItem value="tomorrow">Demain</SelectItem>
-                                <SelectItem value="week">Cette semaine</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-                </CardContent>
-            </Card>
-
-            <Card>
-                <CardHeader>
-                    <CardTitle>Créneaux disponibles - 09/02/2026</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Agence</TableHead>
-                                <TableHead>Date</TableHead>
-                                <TableHead>Heure</TableHead>
-                                <TableHead>Capacité Max</TableHead>
-                                <TableHead>Réservations</TableHead>
-                                <TableHead>Disponibilité</TableHead>
-                                <TableHead>Statut</TableHead>
-                                <TableHead className="text-right">Actions</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            <TableRow>
-                                <TableCell className="font-medium">Plateau</TableCell>
-                                <TableCell>09/02/2026</TableCell>
-                                <TableCell>09:00 - 10:00</TableCell>
-                                <TableCell>4</TableCell>
-                                <TableCell>2</TableCell>
-                                <TableCell>
-                                    <div className="flex items-center gap-2">
-                                        <div className="h-2 w-24 rounded-full bg-gray-200">
-                                            <div className="h-2 w-1/2 rounded-full bg-green-500" />
-                                        </div>
-                                        <span className="text-sm text-muted-foreground">50%</span>
-                                    </div>
-                                </TableCell>
-                                <TableCell>
-                                    <Badge variant="outline" className="bg-green-50 text-green-700">
-                                        Disponible
-                                    </Badge>
-                                </TableCell>
-                                <TableCell className="text-right">
-                                    <Button variant="ghost" size="sm">
-                                        Gérer
-                                    </Button>
-                                </TableCell>
-                            </TableRow>
-                            <TableRow>
-                                <TableCell className="font-medium">Plateau</TableCell>
-                                <TableCell>09/02/2026</TableCell>
-                                <TableCell>10:00 - 11:00</TableCell>
-                                <TableCell>4</TableCell>
-                                <TableCell>4</TableCell>
-                                <TableCell>
-                                    <div className="flex items-center gap-2">
-                                        <div className="h-2 w-24 rounded-full bg-gray-200">
-                                            <div className="h-2 w-full rounded-full bg-red-500" />
-                                        </div>
-                                        <span className="text-sm text-muted-foreground">100%</span>
-                                    </div>
-                                </TableCell>
-                                <TableCell>
-                                    <Badge variant="outline" className="bg-red-50 text-red-700">
-                                        Complet
-                                    </Badge>
-                                </TableCell>
-                                <TableCell className="text-right">
-                                    <Button variant="ghost" size="sm">
-                                        Gérer
-                                    </Button>
-                                </TableCell>
-                            </TableRow>
-                            <TableRow>
-                                <TableCell className="font-medium">Parcelles</TableCell>
-                                <TableCell>09/02/2026</TableCell>
-                                <TableCell>14:00 - 15:00</TableCell>
-                                <TableCell>4</TableCell>
-                                <TableCell>1</TableCell>
-                                <TableCell>
-                                    <div className="flex items-center gap-2">
-                                        <div className="h-2 w-24 rounded-full bg-gray-200">
-                                            <div className="h-2 w-1/4 rounded-full bg-green-500" />
-                                        </div>
-                                        <span className="text-sm text-muted-foreground">25%</span>
-                                    </div>
-                                </TableCell>
-                                <TableCell>
-                                    <Badge variant="outline" className="bg-green-50 text-green-700">
-                                        Disponible
-                                    </Badge>
-                                </TableCell>
-                                <TableCell className="text-right">
-                                    <Button variant="ghost" size="sm">
-                                        Gérer
-                                    </Button>
-                                </TableCell>
-                            </TableRow>
-                            <TableRow>
-                                <TableCell className="font-medium">Almadies</TableCell>
-                                <TableCell>09/02/2026</TableCell>
-                                <TableCell>16:00 - 17:00</TableCell>
-                                <TableCell>4</TableCell>
-                                <TableCell>3</TableCell>
-                                <TableCell>
-                                    <div className="flex items-center gap-2">
-                                        <div className="h-2 w-24 rounded-full bg-gray-200">
-                                            <div className="h-2 w-3/4 rounded-full bg-yellow-500" />
-                                        </div>
-                                        <span className="text-sm text-muted-foreground">75%</span>
-                                    </div>
-                                </TableCell>
-                                <TableCell>
-                                    <Badge variant="outline" className="bg-yellow-50 text-yellow-700">
-                                        Presque complet
-                                    </Badge>
-                                </TableCell>
-                                <TableCell className="text-right">
-                                    <Button variant="ghost" size="sm">
-                                        Gérer
-                                    </Button>
-                                </TableCell>
-                            </TableRow>
-                        </TableBody>
-                    </Table>
-                </CardContent>
-            </Card>
-        </div>
+      <div className="flex flex-col gap-6 p-6">
+        <h1 className="text-3xl font-bold tracking-tight">Créneaux</h1>
+        <p className="text-muted-foreground">Aucune agence configurée</p>
+      </div>
     );
+  }
+
+  const selectedAgencyId = params.agency || agencies[0].id;
+  const selectedAgency =
+    agencies.find((a) => a.id === selectedAgencyId) || agencies[0];
+
+  const selectedDate = params.date ? new Date(params.date) : new Date();
+  selectedDate.setHours(0, 0, 0, 0);
+
+  // Use agency settings for slot generation
+  const settings = await getAgencySettings(selectedAgency.id);
+  const START_HOUR = settings.slotStartHour;
+  const END_HOUR = settings.slotEndHour;
+  const MAX_CAPACITY = settings.slotMaxCapacity;
+
+  const existingCount = await prisma.timeSlot.count({
+    where: {
+      agencyId: selectedAgency.id,
+      slotDate: selectedDate,
+    },
+  });
+
+  if (existingCount < END_HOUR - START_HOUR) {
+    const slotsToCreate = [];
+    for (let hour = START_HOUR; hour < END_HOUR; hour++) {
+      slotsToCreate.push({
+        agencyId: selectedAgency.id,
+        slotDate: selectedDate,
+        slotHour: hour,
+        maxCapacity: MAX_CAPACITY,
+      });
+    }
+    await prisma.timeSlot.createMany({
+      data: slotsToCreate,
+      skipDuplicates: true,
+    });
+  }
+
+  // Fetch slots with booking details
+  const slots = await prisma.timeSlot.findMany({
+    where: {
+      agencyId: selectedAgency.id,
+      slotDate: selectedDate,
+    },
+    orderBy: { slotHour: "asc" },
+    include: {
+      bookings: {
+        include: {
+          proposal: {
+            include: {
+              order: {
+                select: {
+                  orderNumber: true,
+                  productDescription: true,
+                  client: {
+                    select: { firstName: true, lastName: true, phone: true },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  });
+
+  const serializedSlots = slots.map((slot) => ({
+    id: slot.id,
+    slotHour: slot.slotHour,
+    maxCapacity: slot.maxCapacity,
+    currentBookings: slot.currentBookings,
+    isLocked: slot.isLocked,
+    bookings: slot.bookings.map((b) => ({
+      id: b.id,
+      position: b.position,
+      orderNumber: b.proposal.order.orderNumber,
+      productDescription: b.proposal.order.productDescription,
+      clientName: `${b.proposal.order.client.firstName} ${b.proposal.order.client.lastName}`,
+      clientPhone: b.proposal.order.client.phone,
+    })),
+  }));
+
+  const dateStr = selectedDate.toISOString().split("T")[0];
+
+  return (
+    <div className="flex flex-col gap-6 p-6">
+      <div className="flex flex-col gap-2">
+        <h1 className="text-3xl font-bold tracking-tight">Créneaux</h1>
+        <p className="text-muted-foreground">
+          Gérer les créneaux de livraison de toutes les agences
+        </p>
+      </div>
+
+      <AgencySelector
+        agencies={agencies.map((a) => ({
+          id: a.id,
+          name: a.name,
+          city: a.city,
+        }))}
+        selectedId={selectedAgency.id}
+        currentDate={dateStr}
+      />
+
+      <SlotsGrid
+        slots={serializedSlots}
+        currentDate={dateStr}
+        agencyName={selectedAgency.name}
+        basePath={`/super/slots?agency=${selectedAgency.id}`}
+      />
+    </div>
+  );
 }

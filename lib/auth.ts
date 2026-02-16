@@ -49,7 +49,7 @@ export const auth = betterAuth({
 
                 await sendEmail({
                     to: data.email,
-                    subject: "Invitation à rejoindre TAW Delivery",
+                    subject: "Invitation à rejoindre TGVAIRWABO",
                     html: emailHtml,
                     text: emailText,
                 });

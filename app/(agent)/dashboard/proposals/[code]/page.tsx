@@ -75,11 +75,9 @@ interface ProposalDetail {
     };
   };
   booking?: {
-    position: number;
-    slot: {
-      slotDate: string;
-      slotHour: number;
-    };
+    position?: number;
+    slotDate: string;
+    slotHour: number;
   };
 }
 
@@ -190,13 +188,19 @@ export default function ProposalDetailPage({
     switch (choice) {
       case "PAY_ON_DELIVERY":
         return (
-          <Badge variant="outline" className="border-orange-200 text-orange-700">
+          <Badge
+            variant="outline"
+            className="border-orange-200 text-orange-700"
+          >
             Paiement à la livraison
           </Badge>
         );
       case "ALREADY_PAID":
         return (
-          <Badge variant="outline" className="border-emerald-200 text-emerald-700">
+          <Badge
+            variant="outline"
+            className="border-emerald-200 text-emerald-700"
+          >
             Déjà payé
           </Badge>
         );
@@ -394,7 +398,9 @@ export default function ProposalDetailPage({
                   <p className="text-sm text-muted-foreground">
                     Instructions spéciales
                   </p>
-                  <p className="text-sm">{proposal.order.specialInstructions}</p>
+                  <p className="text-sm">
+                    {proposal.order.specialInstructions}
+                  </p>
                 </div>
               )}
             </CardContent>
@@ -459,22 +465,30 @@ export default function ProposalDetailPage({
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <p className="text-sm text-muted-foreground">Décision prise le</p>
-                  <p>{proposal.decidedAt ? formatDate(proposal.decidedAt) : "—"}</p>
+                  <p className="text-sm text-muted-foreground">
+                    Décision prise le
+                  </p>
+                  <p>
+                    {proposal.decidedAt ? formatDate(proposal.decidedAt) : "—"}
+                  </p>
                 </div>
 
                 {proposal.decision === "ACCEPTED" && (
                   <>
                     {proposal.booking && (
                       <div>
-                        <p className="text-sm text-muted-foreground">Créneau choisi</p>
+                        <p className="text-sm text-muted-foreground">
+                          Créneau choisi
+                        </p>
                         <p className="font-medium">
-                          {new Date(proposal.booking.slot.slotDate).toLocaleDateString("fr-FR", {
+                          {new Date(
+                            proposal.booking.slotDate,
+                          ).toLocaleDateString("fr-FR", {
                             weekday: "long",
                             day: "2-digit",
                             month: "long",
                           })}{" "}
-                          - {formatSlotTime(proposal.booking.slot.slotHour)}
+                          - {formatSlotTime(proposal.booking.slotHour)}
                         </p>
                       </div>
                     )}
@@ -496,8 +510,8 @@ export default function ProposalDetailPage({
                 {proposal.decision === "REFUSED" && (
                   <div className="p-4 bg-red-50 rounded-lg border border-red-100">
                     <p className="text-sm text-red-700">
-                      Le client a refusé la livraison. Le colis est disponible au
-                      retrait en agence.
+                      Le client a refusé la livraison. Le colis est disponible
+                      au retrait en agence.
                     </p>
                   </div>
                 )}

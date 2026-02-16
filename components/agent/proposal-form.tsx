@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -14,6 +14,9 @@ import {
   QrCode,
   Loader2,
   Send,
+  Camera,
+  ImageIcon,
+  X,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -52,7 +55,13 @@ export function ProposalForm({
 }: ProposalFormProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [step, setStep] = useState<"form" | "sending">("form");
+  const [step, setStep] = useState<"form" | "uploading" | "sending">("form");
+
+  // Photo state
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const {
     register,
@@ -73,10 +82,31 @@ export function ProposalForm({
 
   const onSubmit = async (data: ProposalFormData) => {
     setIsSubmitting(true);
-    setStep("sending");
 
     try {
-      // Single atomic endpoint: creates client, order, proposal + sends SMS
+      // Step 1: Upload photo if present
+      let parcelImageUrl: string | undefined;
+      if (photoFile) {
+        setStep("uploading");
+        const formData = new FormData();
+        formData.append("file", photoFile);
+
+        const uploadRes = await fetch("/api/upload", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!uploadRes.ok) {
+          const uploadErr = await uploadRes.json();
+          throw new Error(uploadErr.error || "Erreur upload photo");
+        }
+
+        const uploadData = await uploadRes.json();
+        parcelImageUrl = uploadData.url;
+      }
+
+      // Step 2: Create proposal + send SMS
+      setStep("sending");
       const response = await fetch("/api/proposals/create-and-send", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -87,6 +117,7 @@ export function ProposalForm({
           refId: data.refId || undefined,
           contents: data.contents,
           amount: data.amount || undefined,
+          parcelImageUrl,
           expiresInHours: 48,
         }),
       });
@@ -111,6 +142,8 @@ export function ProposalForm({
       }
 
       reset();
+      setPhotoFile(null);
+      setPhotoPreview(null);
       onSuccess?.();
       router.refresh();
     } catch (error) {
@@ -238,6 +271,69 @@ export function ProposalForm({
               {...register("amount")}
             />
           </div>
+
+          {/* Photo du colis (optionnel) */}
+          <div className="space-y-2">
+            <Label>Photo du colis (optionnel)</Label>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/heic,image/heif"
+              capture="environment"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+
+                // Validate size (5MB max)
+                if (file.size > 5 * 1024 * 1024) {
+                  toast.error("L'image ne doit pas dépasser 5 Mo");
+                  return;
+                }
+
+                setPhotoFile(file);
+                const reader = new FileReader();
+                reader.onloadend = () => setPhotoPreview(reader.result as string);
+                reader.readAsDataURL(file);
+              }}
+            />
+
+            {photoPreview ? (
+              <div className="relative rounded-md overflow-hidden border border-border">
+                <img
+                  src={photoPreview}
+                  alt="Aperçu du colis"
+                  className="w-full h-40 object-cover"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPhotoFile(null);
+                    setPhotoPreview(null);
+                    if (fileInputRef.current) fileInputRef.current.value = "";
+                  }}
+                  className="absolute top-2 right-2 p-1.5 bg-black/60 rounded-full text-white hover:bg-black/80 transition"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+                <div className="absolute bottom-2 left-2">
+                  <Badge variant="secondary" className="bg-black/60 text-white text-xs">
+                    <ImageIcon className="h-3 w-3 mr-1" />
+                    {photoFile?.name}
+                  </Badge>
+                </div>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="w-full h-28 border-2 border-dashed border-muted-foreground/25 rounded-md flex flex-col items-center justify-center gap-2 text-muted-foreground hover:border-emerald-500/50 hover:text-emerald-600 transition-colors"
+              >
+                <Camera className="h-6 w-6" />
+                <span className="text-sm">Prendre une photo ou choisir</span>
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
@@ -251,7 +347,7 @@ export function ProposalForm({
           {isSubmitting ? (
             <>
               <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-              {step === "sending" ? "Envoi en cours..." : "Création..."}
+              {step === "uploading" ? "Upload photo..." : step === "sending" ? "Envoi en cours..." : "Création..."}
             </>
           ) : (
             <>

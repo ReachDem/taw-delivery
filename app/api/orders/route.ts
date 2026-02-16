@@ -94,7 +94,11 @@ export async function GET(request: Request) {
                 select: { id: true, firstName: true, lastName: true },
             },
             proposal: {
-                select: { id: true, code: true, decision: true, expiresAt: true },
+                include: {
+                    booking: {
+                        include: { slot: true },
+                    },
+                },
             },
         },
     });

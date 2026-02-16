@@ -68,7 +68,7 @@ export function SuperAdminSidebar() {
                         <Building2 className="h-5 w-5" />
                     </div>
                     <div className="flex flex-col group-data-[collapsible=icon]:hidden">
-                        <span className="text-sm font-semibold">TAW Delivery</span>
+                        <span className="text-sm font-semibold">TGVAIRWABO</span>
                         <span className="text-xs text-muted-foreground">Super Admin</span>
                     </div>
                 </div>

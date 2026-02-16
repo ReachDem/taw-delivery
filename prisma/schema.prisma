@@ -46,6 +46,12 @@ enum PaymentChoice {
   EXEMPT
 }
 
+enum PaymentStatus {
+  PENDING
+  COLLECTED
+  NOT_APPLICABLE
+}
+
 enum MessageChannel {
   SMS
   EMAIL
@@ -172,13 +178,50 @@ model Agency {
   updatedAt      DateTime @updatedAt
   organizationId String?  @unique // Link to Better-Auth Organization
 
-  agents      Agent[]
-  drivers     Driver[]
-  orders      Order[]
-  timeSlots   TimeSlot[]
-  organization Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+  agents        Agent[]
+  drivers       Driver[]
+  orders        Order[]
+  timeSlots     TimeSlot[]
+  deliveryZones DeliveryZone[]
+  organization  Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+  settings      AgencySettings?
 
   @@map("agency")
+}
+
+// ============================================
+// AGENCY SETTINGS
+// ============================================
+
+model AgencySettings {
+  id        String @id @default(uuid())
+  agencyId  String @unique
+
+  // Tarification (3 niveaux de frais de livraison)
+  tariffLabel1 String  @default("Standard")
+  tariffAmount1 Decimal @default(1000) @db.Decimal(10, 2)
+  tariffLabel2 String  @default("Express")
+  tariffAmount2 Decimal @default(2000) @db.Decimal(10, 2)
+  tariffLabel3 String  @default("Premium")
+  tariffAmount3 Decimal @default(3500) @db.Decimal(10, 2)
+
+  // Devise
+  currency String @default("FCFA")
+
+  // Créneaux de livraison
+  slotStartHour  Int @default(9)   // Heure de début (8-20)
+  slotEndHour    Int @default(17)  // Heure de fin (9-21)
+  slotMaxCapacity Int @default(4)  // Places par créneau (3-6)
+
+  // Expiration des propositions
+  proposalExpiryHours Int @default(48)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  agency Agency @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+
+  @@map("agency_settings")
 }
 
 model Agent {
@@ -238,18 +281,37 @@ model Order {
   agencyId            String
   driverId            String?
   productDescription  String
-  amount              Decimal     @db.Decimal(10, 2)
+  parcelImageUrl      String?                         // Photo du colis (URL R2)
+  
+  // Pricing breakdown
+  productAmount       Decimal?    @db.Decimal(10, 2)  // Montant du produit/colis
+  deliveryFee         Decimal?    @db.Decimal(10, 2)  // Frais de livraison (null si pas encore déterminé)
+  extraFee            Decimal?    @db.Decimal(10, 2)  // Frais supplémentaires (ajustement livreur)
+  amount              Decimal     @db.Decimal(10, 2)  // Total = productAmount + deliveryFee + extraFee (legacy, kept for compatibility)
+  
+  // Location
+  locationKnown       Boolean     @default(false)     // L'agent connaît-il la destination ?
+  deliveryZoneId      String?                         // Zone sélectionnée
+  deliveryAddress     String?                         // Adresse précise
+  addressDetails      String?                         // Indications supplémentaires (étage, code, repère)
+  latitude            Decimal?    @db.Decimal(10, 8)
+  longitude           Decimal?    @db.Decimal(11, 8)
+  
+  // Payment tracking
+  paymentStatus       PaymentStatus @default(PENDING)
+  
   status              OrderStatus @default(PENDING)
   specialInstructions String?
   createdAt           DateTime    @default(now())
   updatedAt           DateTime    @updatedAt
 
-  client   Client            @relation(fields: [clientId], references: [id])
-  agent    Agent             @relation(fields: [agentId], references: [id])
-  agency   Agency            @relation(fields: [agencyId], references: [id])
-  driver   Driver?           @relation(fields: [driverId], references: [id])
-  proposal DeliveryProposal?
-  messages MessageLog[]
+  client       Client            @relation(fields: [clientId], references: [id])
+  agent        Agent             @relation(fields: [agentId], references: [id])
+  agency       Agency            @relation(fields: [agencyId], references: [id])
+  driver       Driver?           @relation(fields: [driverId], references: [id])
+  deliveryZone DeliveryZone?     @relation(fields: [deliveryZoneId], references: [id])
+  proposal     DeliveryProposal?
+  messages     MessageLog[]
 
   @@map("order")
 }
@@ -335,6 +397,28 @@ model Organization {
 
   @@unique([slug])
   @@map("organization")
+}
+
+// ============================================
+// DELIVERY ZONES & PRICING
+// ============================================
+
+model DeliveryZone {
+  id        String   @id @default(uuid())
+  agencyId  String
+  name      String                          // Nom du quartier/zone
+  city      String                          // Ville (Douala, Yaoundé, etc.)
+  baseFee   Decimal  @db.Decimal(10, 2)     // Tarif fixe en FCFA
+  isActive  Boolean  @default(true)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  agency Agency  @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  orders Order[]
+
+  @@unique([agencyId, name])
+  @@map("delivery_zone")
 }
 
 model Member {

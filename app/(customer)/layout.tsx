@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-    title: "TAW Delivery - Proposition de Livraison",
+    title: "TGVAIRWABO - Proposition de Livraison",
     description: "Confirmez votre livraison",
 };
 
