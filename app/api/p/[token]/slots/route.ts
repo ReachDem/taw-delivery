@@ -40,7 +40,7 @@ export async function GET(request: Request, { params }: RouteParams) {
 
     // ─── Auto-generate slots if none exist for the period ───
     const agencyId = proposal.order.agencyId;
-    const daysCount = parseInt(days);
+    const daysCount = Math.min(Math.max(parseInt(days) || 7, 1), 31);
 
     // Slots start from TOMORROW — same-day slots are never available to customers
     const tomorrow = new Date();
