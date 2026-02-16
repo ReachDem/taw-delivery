@@ -8,7 +8,7 @@ import { requireAuth } from "@/lib/auth-middleware";
  * Protected: requires authenticated agent
  */
 export async function POST(request: NextRequest) {
-    const [session, authError] = await requireAuth();
+    const [_, authError] = await requireAuth();
     if (authError) return authError;
 
     try {
