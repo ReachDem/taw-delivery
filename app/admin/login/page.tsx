@@ -56,18 +56,24 @@ function LoginForm() {
             } else if (role === "ADMIN") {
                 redirectTo = "/admin/dashboard";
             } else if (role === "AGENT") {
-                redirectTo = "/admin/dashboard"; // Future: "/dashboard"
+                redirectTo = "/dashboard";
             } else if (role === "DRIVER") {
                 redirectTo = "/admin/dashboard"; // Future: "/dlv"
             }
 
-            // Upgrade role if user is member of an org but still has AGENT role
+            // Upgrade role if user is member of an org admin/owner and still has AGENT role
             if (role === "AGENT") {
-                await fetch("/api/auth/upgrade-role", {
+                const upgradeRes = await fetch("/api/auth/upgrade-role", {
                     method: "POST",
                     credentials: "include",
                 });
-                redirectTo = "/admin/dashboard";
+
+                if (upgradeRes.ok) {
+                    const upgradeData = await upgradeRes.json();
+                    if (upgradeData?.role === "ADMIN") {
+                        redirectTo = "/admin/dashboard";
+                    }
+                }
             }
 
             // Hard reload to ensure proxy sees fresh session
