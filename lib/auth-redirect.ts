@@ -1,6 +1,6 @@
 export const LOGIN_ROUTE = "/admin/login";
 
-type Role = "SUPER_ADMIN" | "ADMIN" | "AGENT" | "DRIVER" | string | undefined;
+type Role = "SUPER_ADMIN" | "ADMIN" | "AGENT" | "DRIVER" | string | null | undefined;
 
 /**
  * Returns the default home route for an authenticated user role.
