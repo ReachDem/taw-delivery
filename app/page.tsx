@@ -47,12 +47,13 @@ function DashedLine({
 function Navbar() {
   return (
     <nav className="fixed top-0 z-50 w-full border-b bg-background/80 backdrop-blur-sm">
-      <div className="container mx-auto flex h-14 max-w-5xl items-center justify-between px-6">
-        <Link href="/" className="flex items-center gap-2 font-semibold tracking-tight">
-          <Truck className="h-5 w-5" />
-          TGVAIRWABO
+      <div className="container mx-auto max-w-5xl px-4 sm:px-6">
+        <div className="flex flex-col items-center gap-3 py-3 sm:h-14 sm:flex-row sm:items-center sm:justify-between sm:gap-0 sm:py-0">
+        <Link href="/" className="flex  gap-1 font-semibold tracking-tight">
+          <span className="text-base">TGVAIRWABO</span>
+          <Badge variant="outline" className="px-2 py-0.5">delivery</Badge>
         </Link>
-        <div className="flex items-center gap-8 text-sm text-muted-foreground">
+        <div className="flex w-full flex-wrap items-center justify-center gap-5 text-sm text-muted-foreground sm:w-auto sm:gap-8">
           <Link href="#fonctionnement" className="transition-colors hover:text-foreground">
             Fonctionnement
           </Link>
@@ -62,6 +63,7 @@ function Navbar() {
           <Link href="/admin/login" className="transition-colors hover:text-foreground">
             Connexion
           </Link>
+        </div>
         </div>
       </div>
     </nav>
