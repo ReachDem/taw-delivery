@@ -7,6 +7,7 @@ import {
     generateAdminInvitationEmail,
     generateAdminInvitationTextEmail,
 } from "@/lib/email-templates";
+import { getAppUrl } from "@/lib/url";
 
 export const auth = betterAuth({
     database: prismaAdapter(prisma, {
@@ -27,7 +28,7 @@ export const auth = betterAuth({
                 // Admins accept at /admin/accept-invitation, members (agents) at /accept-invitation (route group (agent))
                 const isAdmin = data.role === "admin";
                 const basePath = isAdmin ? "/admin" : "";
-                const inviteLink = `${process.env.NEXT_PUBLIC_APP_URL}${basePath}/accept-invitation/${data.id}`;
+                const inviteLink = `${getAppUrl()}${basePath}/accept-invitation/${data.id}`;
 
                 const emailHtml = generateAdminInvitationEmail({
                     inviteeName: data.email,
