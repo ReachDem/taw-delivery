@@ -1,8 +1,9 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { authClient } from "@/lib/auth-client";
+import { authClient, useSession } from "@/lib/auth-client";
+import { getHomeByRole } from "@/lib/auth-redirect";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,6 +12,15 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import Link from "next/link";
+
+function extractRole(value: unknown): string | undefined {
+    if (typeof value !== "object" || value === null || !("role" in value)) {
+        return undefined;
+    }
+
+    const role = (value as { role?: unknown }).role;
+    return typeof role === "string" ? role : undefined;
+}
 
 export default function LoginPage() {
     return (
@@ -27,11 +37,18 @@ export default function LoginPage() {
 function LoginForm() {
     const searchParams = useSearchParams();
     const created = searchParams.get("created");
+    const { data: session, isPending: isSessionPending } = useSession();
 
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (!isSessionPending && session?.user) {
+            window.location.href = getHomeByRole(session.user.role);
+        }
+    }, [session, isSessionPending]);
 
     async function handleLogin(e: React.FormEvent) {
         e.preventDefault();
@@ -48,18 +65,13 @@ function LoginForm() {
                 throw error;
             }
 
-            // Redirect based on user role
-            const role = (data?.user as any)?.role;
-            let redirectTo = "/admin/dashboard";
-            if (role === "SUPER_ADMIN") {
-                redirectTo = "/super";
-            } else if (role === "ADMIN") {
-                redirectTo = "/admin/dashboard";
-            } else if (role === "AGENT") {
-                redirectTo = "/dashboard";
-            } else if (role === "DRIVER") {
-                redirectTo = "/admin/dashboard"; // Future: "/dlv"
-            }
+            // Read role from a fresh session first (more reliable right after sign-in)
+            const sessionResult = await authClient.getSession();
+            const role =
+                extractRole(sessionResult?.data?.user) ??
+                extractRole(data?.user);
+
+            let redirectTo = getHomeByRole(role);
 
             // Upgrade role if user is member of an org admin/owner and still has AGENT role
             if (role === "AGENT") {
@@ -70,9 +82,7 @@ function LoginForm() {
 
                 if (upgradeRes.ok) {
                     const upgradeData = await upgradeRes.json();
-                    if (upgradeData?.role === "ADMIN") {
-                        redirectTo = "/admin/dashboard";
-                    }
+                    redirectTo = getHomeByRole(upgradeData?.role ?? role);
                 }
             }
 
@@ -80,12 +90,21 @@ function LoginForm() {
             window.location.href = redirectTo;
             toast.success("Connexion réussie");
 
-        } catch (err: any) {
-            setError(err.message || "Email ou mot de passe incorrect");
+        } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : "Email ou mot de passe incorrect";
+            setError(message);
             toast.error("Erreur de connexion");
         } finally {
             setLoading(false);
         }
+    }
+
+    if (isSessionPending || session?.user) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+        );
     }
 
     return (

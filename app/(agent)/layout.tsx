@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
+import { getHomeByRole, LOGIN_ROUTE } from "@/lib/auth-redirect";
 
 export default async function AgentLayout({
     children,
@@ -13,15 +14,12 @@ export default async function AgentLayout({
 
     // Redirect to login if not authenticated
     if (!session?.user) {
-        redirect("/login");
+        redirect(LOGIN_ROUTE);
     }
 
     // Redirect non-agents to their respective dashboards
-    if (session.user.role === "ADMIN") {
-        redirect("/admin/dashboard");
-    }
-    if (session.user.role === "SUPER_ADMIN") {
-        redirect("/(super)/super");
+    if (session.user.role !== "AGENT") {
+        redirect(getHomeByRole(session.user.role, LOGIN_ROUTE));
     }
 
     return <>{children}</>;

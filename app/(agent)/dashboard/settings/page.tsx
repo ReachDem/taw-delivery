@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { authClient, useSession } from "@/lib/auth-client";
+import { LOGIN_ROUTE } from "@/lib/auth-redirect";
 import {
   Card,
   CardContent,
@@ -61,7 +62,7 @@ export default function SettingsPage() {
   useEffect(() => {
     const fetchData = async () => {
       if (!session?.user) {
-        router.push("/login");
+        router.push(LOGIN_ROUTE);
         return;
       }
 

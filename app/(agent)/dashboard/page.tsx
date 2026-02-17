@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useSession } from "@/lib/auth-client";
+import { LOGIN_ROUTE } from "@/lib/auth-redirect";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -87,7 +88,7 @@ export default function AgentDashboard() {
   useEffect(() => {
     const fetchData = async () => {
       if (!session?.user) {
-        router.push("/login");
+        router.push(LOGIN_ROUTE);
         return;
       }
 

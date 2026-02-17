@@ -1,5 +1,6 @@
 import { betterFetch } from "@better-fetch/fetch";
 import { type NextRequest, NextResponse } from "next/server";
+import { getHomeByRole, LOGIN_ROUTE } from "@/lib/auth-redirect";
 
 type Session = {
     user: {
@@ -57,24 +58,24 @@ export async function proxy(request: NextRequest) {
             );
             session = result.data;
         } catch {
-            return NextResponse.redirect(new URL("/admin/login", request.url));
+            return NextResponse.redirect(new URL(LOGIN_ROUTE, request.url));
         }
 
         if (!session) {
-            return NextResponse.redirect(new URL("/admin/login", request.url));
+            return NextResponse.redirect(new URL(LOGIN_ROUTE, request.url));
         }
 
         const role = session.user.role;
 
         // /super/* → SUPER_ADMIN only
         if (pathname.startsWith("/super") && role !== "SUPER_ADMIN") {
-            return NextResponse.redirect(new URL("/admin/dashboard", request.url));
+            return NextResponse.redirect(new URL(getHomeByRole(role, LOGIN_ROUTE), request.url));
         }
 
         // /admin/* → SUPER_ADMIN or ADMIN only
         if (pathname.startsWith("/admin") && role !== "SUPER_ADMIN" && role !== "ADMIN") {
             // Non-admin users → send to login (safe: excluded from proxy)
-            return NextResponse.redirect(new URL("/admin/login", request.url));
+            return NextResponse.redirect(new URL(LOGIN_ROUTE, request.url));
         }
 
         return NextResponse.next();
@@ -84,25 +85,6 @@ export async function proxy(request: NextRequest) {
     // ─── Future: /dlv/* → DRIVER only ───
 
     return NextResponse.next();
-}
-
-/**
- * Returns the home route for a given user role.
- * Used for post-login redirect and unauthorized access redirect.
- */
-export function getHomeByRole(role?: string): string {
-    switch (role) {
-        case "SUPER_ADMIN":
-            return "/super";
-        case "ADMIN":
-            return "/admin/dashboard";
-        case "AGENT":
-            return "/dashboard";
-        case "DRIVER":
-            return "/dlv/dashboard"; // Future: "
-        default:
-            return "/admin/login";
-    }
 }
 
 export const config = {
